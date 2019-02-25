@@ -1,0 +1,31 @@
+
+
+seteuid()
+  无论什么情况，它只改变进程euid，而不改变ruid和suid。
+
+  如果原来的euid==0，则新的euid随意设，都可以成功改变。
+
+  如果原来的euid!=0，不同的系统的处理方式是不一样的：
+  
+setreuid()有点小复杂：
+
+  它会修改ruid和euid，也某些情况下，也会修改suid。
+	在Solaris和Linux中，setreuid(geteuid(),getuid())可以实现ruid和euid的交换
+
+setuid()：
+
+	如果原来的euid==0，则该函数将会设置所有的id都等于新的id。
+
+	如果原来的三个id为：ruid=300,euid=0,suid=100
+
+	则setuid(200)执行以后，ruid=200,euid=200,suid=200
+	
+	如果原来的euid!=0，但是新的id等于原来ruid和suid中的一个，那么也是可以执行的。否则就不能执行。
+
+	比如原来的三个id为：ruid=100，euid=200，suid=300
+
+	则setuid(300)可以执行，执行结束以后ruid=100,euid=300,suid=300（也就是说只改变了euid）。
+
+	setuid(400)就不能执行。
+
+
