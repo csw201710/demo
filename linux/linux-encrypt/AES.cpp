@@ -3,6 +3,7 @@ int aes_crypt(char* indata,int inlen,char* outdata,int *outlen,int flag) //flag:
 {
 	int plain_data_len,i;
 	char *plain_data;
+    unsigned char iv[AES_BLOCK_SIZE]={0x01,0x02,0x03,0x04,0x04,0x03,0x02,0x01,0x01,0x02,0x03,0x04,0x04,0x03,0x02,0x01};
 	unsigned char aesKey[AES_BLOCK_SIZE ] = {0x01, 0x02, 0x03, 0x04, 0x30, 0x47, 0x71, 0xb3, 0x9d, 0x30, 0x21, 0xc4, 0xe1, 0x71, 0x10, 0x11};
 	int * headLen = 0;
 	AES_KEY	key;
@@ -41,6 +42,7 @@ int aes_crypt(char* indata,int inlen,char* outdata,int *outlen,int flag) //flag:
 	for(i=0; i<count; i++)
 	{
 		AES_ecb_encrypt((unsigned char*)plain_data + i*AES_BLOCK_SIZE, (unsigned char*)outdata  + i*AES_BLOCK_SIZE, &key, flag);
+		AES_cbc_encrypt((unsigned char*)plain_data + i*AES_BLOCK_SIZE, (unsigned char*)outdata  + i*AES_BLOCK_SIZE,AES_BLOCK_SIZE, &key,iv, flag);
 	}
 	
 	if(flag == 1){
