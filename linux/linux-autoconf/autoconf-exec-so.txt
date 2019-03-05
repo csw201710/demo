@@ -1,0 +1,360 @@
+流程：
+	exec:
+		autoscan  [mv configure.scan configure.ac] aclocal autoheader  [create Makefile.am] automake autoconf 
+	so:
+		autoscan  [mv configure.scan configure.ac] "libtoolize --copy --force" aclocal  autoheader  [create Makefile.am] automake autoconf 
+	exec demo：
+				[root@localhost t1]# ls
+				AUTHORS  ChangeLog  configure.ac  main.cpp  Makefile.am  NEWS  README
+				[root@localhost t1]# aclocal
+				[root@localhost t1]# ls
+				aclocal.m4  AUTHORS  autom4te.cache  ChangeLog  configure.ac  main.cpp  Makefile.am  NEWS  README
+				[root@localhost t1]# autoheader 
+				[root@localhost t1]# ls
+				aclocal.m4  AUTHORS  autom4te.cache  ChangeLog  config.h.in  configure.ac  main.cpp  Makefile.am  NEWS  README
+				[root@localhost t1]# automake
+				configure.ac:26: error: required file './install-sh' not found
+				configure.ac:26:   'automake --add-missing' can install 'install-sh'
+				configure.ac:26: error: required file './missing' not found
+				configure.ac:26:   'automake --add-missing' can install 'missing'
+				Makefile.am: error: required file './depcomp' not found
+				Makefile.am:   'automake --add-missing' can install 'depcomp'
+				[root@localhost t1]# automake --add-missing
+				configure.ac:26: installing './install-sh'
+				configure.ac:26: installing './missing'
+				Makefile.am: installing './depcomp'
+				[root@localhost t1]# ls
+				aclocal.m4  autom4te.cache  config.h.in   depcomp     main.cpp     Makefile.in  NEWS
+				AUTHORS     ChangeLog       configure.ac  install-sh  Makefile.am  missing      README
+				[root@localhost t1]# autoconf
+				[root@localhost t1]# ls
+				aclocal.m4  autom4te.cache  config.h.in  configure.ac  install-sh  Makefile.am  missing  README
+				AUTHORS     ChangeLog       configure    depcomp       main.cpp    Makefile.in  NEWS
+				[root@localhost t1]# ./configure
+				checking for a BSD-compatible install... /usr/bin/install -c
+				checking whether build environment is sane... yes
+				checking for a thread-safe mkdir -p... /usr/bin/mkdir -p
+				checking for gawk... gawk
+				checking whether make sets $(MAKE)... yes
+				checking whether make supports nested variables... yes
+				checking for g++... g++
+				checking whether the C++ compiler works... yes
+				checking for C++ compiler default output file name... a.out
+				checking for suffix of executables... 
+				checking whether we are cross compiling... no
+				checking for suffix of object files... o
+				checking whether we are using the GNU C++ compiler... yes
+				checking whether g++ accepts -g... yes
+				checking for style of include used by make... GNU
+				checking dependency style of g++... gcc3
+				checking for gcc... gcc
+				checking whether we are using the GNU C compiler... yes
+				checking whether gcc accepts -g... yes
+				checking for gcc option to accept ISO C89... none needed
+				checking dependency style of gcc... gcc3
+				checking that generated files are newer than configure... done
+				configure: creating ./config.status
+				config.status: creating Makefile
+				config.status: creating config.h
+				config.status: executing depfiles commands
+				[root@localhost t1]# ls
+				aclocal.m4  autom4te.cache  config.h     config.log     configure     depcomp     main.cpp  Makefile.am  missing  README
+				AUTHORS     ChangeLog       config.h.in  config.status  configure.ac  install-sh  Makefile  Makefile.in  NEWS     stamp-h1
+				[root@localhost t1]# make
+				make  all-am
+				make[1]: Entering directory `/root/code/test/t1'
+				g++ -DHAVE_CONFIG_H -I.     -g -O2 -MT main.o -MD -MP -MF .deps/main.Tpo -c -o main.o main.cpp
+				mv -f .deps/main.Tpo .deps/main.Po
+				g++  -g -O2   -o main main.o  
+				make[1]: Leaving directory `/root/code/test/t1'
+				[root@localhost t1]# ls
+				aclocal.m4      ChangeLog    config.log     configure.ac  main      Makefile     missing  stamp-h1
+				AUTHORS         config.h     config.status  depcomp       main.cpp  Makefile.am  NEWS
+				autom4te.cache  config.h.in  configure      install-sh    main.o    Makefile.in  README
+				[root@localhost t1]# ./main
+				hello world![root@localhost t1]# 
+				[root@localhost t1]# 
+	so demo：
+				[root@localhost t1]# ls
+				AUTHORS  ChangeLog  configure.ac  main.cpp  Makefile.am  NEWS  README
+				[root@localhost t1]# libtoolize 
+				libtoolize: putting auxiliary files in `.'.
+				libtoolize: linking file `./ltmain.sh'
+				libtoolize: putting macros in AC_CONFIG_MACRO_DIR, `m4'.
+				libtoolize: linking file `m4/libtool.m4'
+				libtoolize: linking file `m4/ltoptions.m4'
+				libtoolize: linking file `m4/ltsugar.m4'
+				libtoolize: linking file `m4/ltversion.m4'
+				libtoolize: linking file `m4/lt~obsolete.m4'
+				libtoolize: Consider adding `-I m4' to ACLOCAL_AMFLAGS in Makefile.am.
+				[root@localhost t1]# ls
+				AUTHORS  ChangeLog  configure.ac  ltmain.sh  m4  main.cpp  Makefile.am  NEWS  README
+				[root@localhost t1]# aclocal
+				[root@localhost t1]# autoheader 
+				[root@localhost t1]# automake --add-missing
+				configure.ac:64: installing './config.guess'
+				configure.ac:64: installing './config.sub'
+				configure.ac:26: installing './install-sh'
+				configure.ac:26: installing './missing'
+				Makefile.am: installing './depcomp'
+				[root@localhost t1]# ls
+				aclocal.m4  autom4te.cache  config.guess  config.sub    depcomp     ltmain.sh  main.cpp     Makefile.in  NEWS
+				AUTHORS     ChangeLog       config.h.in   configure.ac  install-sh  m4         Makefile.am  missing      README
+				[root@localhost t1]# autoconf
+				[root@localhost t1]# ls
+				aclocal.m4  autom4te.cache  config.guess  config.sub  configure.ac  install-sh  m4        Makefile.am  missing  README
+				AUTHORS     ChangeLog       config.h.in   configure   depcomp       ltmain.sh   main.cpp  Makefile.in  NEWS
+				[root@localhost t1]# ./config
+				-bash: ./config: No such file or directory
+				[root@localhost t1]# ./configure 
+				checking for a BSD-compatible install... /usr/bin/install -c
+				checking whether build environment is sane... yes
+				checking for a thread-safe mkdir -p... /usr/bin/mkdir -p
+				checking for gawk... gawk
+				checking whether make sets $(MAKE)... yes
+				checking whether make supports nested variables... yes
+				checking for g++... g++
+				checking whether the C++ compiler works... yes
+				checking for C++ compiler default output file name... a.out
+				checking for suffix of executables... 
+				checking whether we are cross compiling... no
+				checking for suffix of object files... o
+				checking whether we are using the GNU C++ compiler... yes
+				checking whether g++ accepts -g... yes
+				checking for style of include used by make... GNU
+				checking dependency style of g++... gcc3
+				checking for gcc... gcc
+				checking whether we are using the GNU C compiler... yes
+				checking whether gcc accepts -g... yes
+				checking for gcc option to accept ISO C89... none needed
+				checking dependency style of gcc... gcc3
+				checking build system type... x86_64-unknown-linux-gnu
+				checking host system type... x86_64-unknown-linux-gnu
+				checking how to print strings... printf
+				checking for a sed that does not truncate output... /usr/bin/sed
+				checking for grep that handles long lines and -e... /usr/bin/grep
+				checking for egrep... /usr/bin/grep -E
+				checking for fgrep... /usr/bin/grep -F
+				checking for ld used by gcc... /usr/bin/ld
+				checking if the linker (/usr/bin/ld) is GNU ld... yes
+				checking for BSD- or MS-compatible name lister (nm)... /usr/bin/nm -B
+				checking the name lister (/usr/bin/nm -B) interface... BSD nm
+				checking whether ln -s works... yes
+				checking the maximum length of command line arguments... 1572864
+				checking whether the shell understands some XSI constructs... yes
+				checking whether the shell understands "+="... yes
+				checking how to convert x86_64-unknown-linux-gnu file names to x86_64-unknown-linux-gnu format... func_convert_file_noop
+				checking how to convert x86_64-unknown-linux-gnu file names to toolchain format... func_convert_file_noop
+				checking for /usr/bin/ld option to reload object files... -r
+				checking for objdump... objdump
+				checking how to recognize dependent libraries... pass_all
+				checking for dlltool... no
+				checking how to associate runtime and link libraries... printf %s\n
+				checking for ar... ar
+				checking for archiver @FILE support... @
+				checking for strip... strip
+				checking for ranlib... ranlib
+				checking command to parse /usr/bin/nm -B output from gcc object... ok
+				checking for sysroot... no
+				checking for mt... no
+				checking if : is a manifest tool... no
+				checking how to run the C preprocessor... gcc -E
+				checking for ANSI C header files... yes
+				checking for sys/types.h... yes
+				checking for sys/stat.h... yes
+				checking for stdlib.h... yes
+				checking for string.h... yes
+				checking for memory.h... yes
+				checking for strings.h... yes
+				checking for inttypes.h... yes
+				checking for stdint.h... yes
+				checking for unistd.h... yes
+				checking for dlfcn.h... yes
+				checking for objdir... .libs
+				checking if gcc supports -fno-rtti -fno-exceptions... no
+				checking for gcc option to produce PIC... -fPIC -DPIC
+				checking if gcc PIC flag -fPIC -DPIC works... yes
+				checking if gcc static flag -static works... no
+				checking if gcc supports -c -o file.o... yes
+				checking if gcc supports -c -o file.o... (cached) yes
+				checking whether the gcc linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+				checking whether -lc should be explicitly linked in... no
+				checking dynamic linker characteristics... GNU/Linux ld.so
+				checking how to hardcode library paths into programs... immediate
+				checking whether stripping libraries is possible... yes
+				checking if libtool supports shared libraries... yes
+				checking whether to build shared libraries... yes
+				checking whether to build static libraries... yes
+				checking how to run the C++ preprocessor... g++ -E
+				checking for ld used by g++... /usr/bin/ld -m elf_x86_64
+				checking if the linker (/usr/bin/ld -m elf_x86_64) is GNU ld... yes
+				checking whether the g++ linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+				checking for g++ option to produce PIC... -fPIC -DPIC
+				checking if g++ PIC flag -fPIC -DPIC works... yes
+				checking if g++ static flag -static works... no
+				checking if g++ supports -c -o file.o... yes
+				checking if g++ supports -c -o file.o... (cached) yes
+				checking whether the g++ linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+				checking dynamic linker characteristics... (cached) GNU/Linux ld.so
+				checking how to hardcode library paths into programs... immediate
+				checking that generated files are newer than configure... done
+				configure: creating ./config.status
+				config.status: creating Makefile
+				config.status: creating config.h
+				config.status: executing depfiles commands
+				config.status: executing libtool commands
+				[root@localhost t1]# make
+				make  all-am
+				make[1]: Entering directory `/root/code/test/t1'
+				/bin/sh ./libtool  --tag=CXX   --mode=compile g++ -DHAVE_CONFIG_H -I.     -g -O2 -MT main.lo -MD -MP -MF .deps/main.Tpo -c -o main.lo main.cpp
+				libtool: compile:  g++ -DHAVE_CONFIG_H -I. -g -O2 -MT main.lo -MD -MP -MF .deps/main.Tpo -c main.cpp  -fPIC -DPIC -o .libs/main.o
+				libtool: compile:  g++ -DHAVE_CONFIG_H -I. -g -O2 -MT main.lo -MD -MP -MF .deps/main.Tpo -c main.cpp -o main.o >/dev/null 2>&1
+				mv -f .deps/main.Tpo .deps/main.Plo
+				/bin/sh ./libtool  --tag=CXX   --mode=link g++  -g -O2   -o libtest.la -rpath /usr/local/lib main.lo  
+				libtool: link: rm -fr  .libs/libtest.a .libs/libtest.la .libs/libtest.lai .libs/libtest.so .libs/libtest.so.0 .libs/libtest.so.0.0.0
+				libtool: link: g++  -fPIC -DPIC -shared -nostdlib /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crti.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtbeginS.o  .libs/main.o   -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5 -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../.. -lstdc++ -lm -lc -lgcc_s /usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtendS.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crtn.o  -O2   -Wl,-soname -Wl,libtest.so.0 -o .libs/libtest.so.0.0.0
+				libtool: link: (cd ".libs" && rm -f "libtest.so.0" && ln -s "libtest.so.0.0.0" "libtest.so.0")
+				libtool: link: (cd ".libs" && rm -f "libtest.so" && ln -s "libtest.so.0.0.0" "libtest.so")
+				libtool: link: ar cru .libs/libtest.a  main.o
+				libtool: link: ranlib .libs/libtest.a
+				libtool: link: ( cd ".libs" && rm -f "libtest.la" && ln -s "../libtest.la" "libtest.la" )
+				make[1]: Leaving directory `/root/code/test/t1'
+				[root@localhost t1]# ls
+				aclocal.m4      ChangeLog     config.h.in    config.sub    depcomp     libtool    main.cpp  Makefile     missing  stamp-h1
+				AUTHORS         config.guess  config.log     configure     install-sh  ltmain.sh  main.lo   Makefile.am  NEWS
+				autom4te.cache  config.h      config.status  configure.ac  libtest.la  m4         main.o    Makefile.in  README
+				[root@localhost t1]# 
+
+	
+
+site:http://www.gnu.org/software/autoconf/manual/autoconf.html#Automake
+
+     your source files --> [autoscan*] --> [configure.scan] --> configure.ac
+     
+     configure.ac --.
+                    |   .------> autoconf* -----> configure
+     [aclocal.m4] --+---+
+                    |   `-----> [autoheader*] --> [config.h.in]
+     [acsite.m4] ---'
+     
+     Makefile.in
+
+	 
+1.autoscan (autoconf): 扫描源代码以搜寻普通的可移植性问题，比如检查编译器，库，头文件等，生成文件configure.scan,它是configure.ac的一个雏形。
+2.aclocal (automake):根据已经安装的宏，用户定义宏和acinclude.m4文件中的宏将configure.ac文件所需要的宏集中定义到文件 aclocal.m4中。aclocal是一个perl 脚本程序，它的定义是：“aclocal - create aclocal.m4 by scanning configure.ac”
+user input files   optional input     process          output files
+================   ==============     =======          ============
+                    acinclude.m4 - - - - -.
+                                          V
+                                      .-------,
+configure.ac ------------------------>|aclocal|
+                 {user macro files} ->|       |------> aclocal.m4
+                                      `-------'
+3.autoheader(autoconf): 根据configure.ac中的某些宏，比如cpp宏定义，运行m4，声称config.h.in
+user input files    optional input     process          output files
+================    ==============     =======          ============
+
+                    aclocal.m4 - - - - - - - .
+                                             |
+                                             V
+                                     .----------,
+configure.ac ----------------------->|autoheader|----> autoconfig.h.in
+                                     `----------'
+4.automake: automake将Makefile.am中定义的结构建立Makefile.in，然后configure脚本将生成的Makefile.in文件转换为Makefile。如果在configure.ac中定义了一些特殊的宏，比如AC_PROG_LIBTOOL，它会调用libtoolize，否则它会自己产生config.guess和config.sub
+
+user input files   optional input   processes          output files
+================   ==============   =========          ============
+
+                                     .--------,
+                                     |        | - - -> COPYING
+                                     |        | - - -> INSTALL
+                                     |        |------> install-sh
+                                     |        |------> missing
+                                     |automake|------> mkinstalldirs
+configure.ac ----------------------->|        |
+Makefile.am  ----------------------->|        |------> Makefile.in
+                                     |        |------> stamp-h.in
+                                 .---+        | - - -> config.guess
+                                 |   |        | - - -> config.sub
+                                 |   `------+-'
+                                 |          | - - - -> config.guess
+                                 |libtoolize| - - - -> config.sub
+                                 |          |--------> ltmain.sh
+                                 |          |--------> ltconfig
+                                 `----------'
+5.autoconf:将configure.ac中的宏展开，生成configure脚本。这个过程可能要用到aclocal.m4中定义的宏。
+
+user input files   optional input   processes          output files
+================   ==============   =========          ============
+
+                   aclocal.m4 - - - - - -.
+                                         V
+                                     .--------,
+configure.ac ----------------------->|autoconf|------> configure ----->autoconfig.h,Makefile
+
+/***********************************************************************************************************/
+	 
+	 
+	 
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+
+
+##########################################################################
+# Macro: AC_PREREQ (version)
+# 确保使用最新版本的Autoconf。 如果用于创建configure的Autoconf版本早于版本，则将错误消息输出到标准错误输出并退出并失败（退出状态为63）。
+##########################################################################
+AC_PREREQ([2.69])
+
+###########################################################################
+# Macro: AC_INIT (package, version, [bug-report], [tarname], [url])
+# 设置包的名称及其版本
+# 可选参数bug-report应该是用户应向其发送错误报告的电子邮件
+# url应该是包的主页
+###########################################################################
+AC_INIT([helloworld], [1.0], [xxx@qq.com])
+
+###########################################################################
+# Macro: AC_CONFIG_SRCDIR (unique-file-in-source-dir)
+# unique-file-in-source-dir是包源目录中的一些文件; 配置检查此文件的存在，以确保它所告知的目录实际上包含源代码。
+# 偶尔有人用--srcdir意外指定了错误的目录; 这是一个安全检查。
+###########################################################################
+AC_CONFIG_SRCDIR([main.cpp])
+
+###########################################################################
+# AC_CONFIG_HEADERS (header ..., [cmds], [init-cmds])
+# 该宏是实例化宏之一;
+# example 1:
+#			AC_CHECK_HEADERS([unistd.h windows.h])
+#			这个宏将在当前建造环境下检查unistd.h,windows.h是否存在。并将两个参数写入到配置头文件中。一般是config.h，你可以使用AC_CONFIG_HEADERS([headers])来指定。
+#				AC_CONFIG_HEADERS([config.h])
+#			如果存在就会出现在config.h中例如下面:
+#										/* Define to 1 if you have the <unistd.h> header file. */ 
+#										#define HAVE_UNISTD_H 1 
+#										/* Define to 1 if you have the <windows.h> header file. */ 
+#										#define HAVE_WINDOWS_H 1
+###########################################################################
+AC_CONFIG_HEADERS([config.h])
+
+###########################################################################
+# AC_PROG_CXX ([compiler-search-list])
+# 确定要使用的C ++编译器。 检查是否设置了环境变量CXX或CCC（按此顺序）; 
+# 如果是，则将输出变量CXX设置为其值。
+###########################################################################
+AC_PROG_CXX
+
+# Checks for libraries.
+
+# Checks for header files.
+
+# Checks for typedefs, structures, and compiler characteristics.
+
+# Checks for library functions.
+
+###########################################################################
+# AC_OUTPUT ([file]..., [extra-cmds], [init-cmds])
+# 生成config.status并启动它。 在configure.ac结束时调用此宏一次。
+# 这个宏是我们要输出的Makefile的名字
+###########################################################################
+AC_OUTPUT
+
