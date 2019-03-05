@@ -1,0 +1,13 @@
+mkdir soap && cd soap && soapcpp2  -i -x ../calc.h
+
+client:
+		g++ client.cpp soap/soapProxy.cpp soap/soapC.cpp soap/soapStub.h -o client -lsoap++
+	or
+		g++ client.cpp soap/soapProxy.cpp soap/soapC.cpp soap/soapStub.h ../stdsoap2.cpp -o client
+		
+		
+server:
+		g++ server.cpp soap/soapService.cpp soap/soapC.cpp -o server -lgsoap++
+	or:
+		g++ server.cpp soap/soapService.cpp soap/soapC.cpp ../stdsoap2.cpp -o server 
+
