@@ -1,20 +1,47 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-int copy_file(const char* src,const char *dst)
+
+static int copy_file(const char* src,const char *dst)
 {
-    FILE *fp_src,*fp_des;
+    FILE *fp_src = NULL,*fp_des = NULL;
     char buf[1024];
     int num;
-    if((fp_src=fopen(src,"r"))==NULL)
-    {
-        perror("fopen src");
-		return -1;
+    
+    if(access(src, F_OK) != 0){
+    	ERROR("access f %s failed err:%d, %s",src,errno,strerror(errno));
+    	return -1;
     }
-    if((fp_des=fopen(dst,"w"))==NULL)
+    
+    if(access(src, R_OK) != 0){
+    	ERROR("access r %s failed err:%d, %s",src,errno,strerror(errno));
+    	return -1;
+    }
+    
+    if(access(dst, F_OK) == 0){
+	    if(access(dst, W_OK) != 0){   
+	        ERROR("access w %s failed err:%d, %s",dst,errno,strerror(errno));
+	        return -1;
+	    }   
+    }
+    
+    if((fp_src=fopen(src,"rb"))==NULL)
     {
-        perror("fopen dst");
-        return -1;
+        ERROR("fopen src:%s err:%d, %s",src,errno,strerror(errno));
+				return -1;
+    }
+    if((fp_des=fopen(dst,"wb"))==NULL)
+    {
+        ERROR("fopen dst:%s err:%d, %s [try again]",dst,errno,strerror(errno));
+        unlink(dst);
+    		if((fp_des=fopen(dst,"wb"))==NULL){
+    			ERROR("fopen dst:%s err:%d, %s [try again failed]",dst,errno,strerror(errno));	
+        	fclose(fp_src);
+        	return -1;
+    		}    
+        
+        
+
     }
     do
     {
@@ -25,5 +52,6 @@ int copy_file(const char* src,const char *dst)
     }while(1);
     fclose(fp_src);
     fclose(fp_des);
+    return 1;
 }
 
