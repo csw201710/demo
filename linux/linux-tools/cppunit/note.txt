@@ -18,6 +18,17 @@
 
 3. 关键点:
 	//class CPPUNIT_API TestCase : public TestLeaf,public TestFixture {}
+	/*
+//根据测试类，生成一个对应的模板类，统一代理测试方法的调用.
+template <class Fixture>
+class TestCaller : public TestCase
+{ 
+  typedef void (Fixture::*TestMethod)();
+	// ...
+}
+*/
+
+
 	  if ( result->protect( TestCaseMethodFunctor( this, &TestCase::setUp ),
 	                        this,
 	                       "setUp() failed" ) )
@@ -29,3 +40,4 @@
 	  result->protect( TestCaseMethodFunctor( this, &TestCase::tearDown ),
 	                   this,
 	                   "tearDown() failed" );
+
