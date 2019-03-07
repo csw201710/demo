@@ -1,0 +1,31 @@
+通用指针:
+	typedef void (TestCase::*Method)();
+
+1. 测试类继承
+		class StringTest : public CppUnit::TestFixture{}
+2. 
+	class CPPUNIT_API TestFixture
+	{
+	public:
+	  virtual ~TestFixture() {};
+
+	  //! \brief Set up context before running a test.
+	  virtual void setUp() {};
+
+	  //! Clean up after the test run.
+	  virtual void tearDown() {};
+	};
+
+3. 关键点:
+	//class CPPUNIT_API TestCase : public TestLeaf,public TestFixture {}
+	  if ( result->protect( TestCaseMethodFunctor( this, &TestCase::setUp ),
+	                        this,
+	                       "setUp() failed" ) )
+	  {
+	    result->protect( TestCaseMethodFunctor( this, &TestCase::runTest ),
+	                     this );
+	  }
+		//typedef void (TestCase::*Method)();
+	  result->protect( TestCaseMethodFunctor( this, &TestCase::tearDown ),
+	                   this,
+	                   "tearDown() failed" );
