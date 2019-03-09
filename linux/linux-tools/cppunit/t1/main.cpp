@@ -1,4 +1,9 @@
-#include "t1.h"
+#include <cppunit/TestResult.h>
+#include <cppunit/TestResultCollector.h>
+#include <cppunit/TextOutputter.h>
+#include <cppunit/TestRunner.h>
+#include <cppunit/extensions/HelperMacros.h>
+
 
 int main(int argc, char* argv[])
 {
