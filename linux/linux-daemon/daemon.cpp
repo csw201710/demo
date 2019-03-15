@@ -143,6 +143,7 @@ main(int argc, char **argv)
             ret = execv(child_argv[0], (char **)child_argv);
             if (ret < 0) {
                 fprintf(stderr, "execv ret:%d errno:%d error:%s\n", ret, errno, strerror(errno));
+				exit(errno);
             }
             exit(0);
         }
