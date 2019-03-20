@@ -1,0 +1,9 @@
+查看ELF文件头：
+	readelf -h obj 
+查看Program header：
+	readelf -l obj 
+查看段表信息：
+	readelf -S obj 
+把text section的具体内容可以打印出来
+	readelf -x .text helloworld
+
