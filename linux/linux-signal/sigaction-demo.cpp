@@ -24,6 +24,7 @@ int main(){
 
 	sigaction(SIGTERM,&newact,&oldact);//原来的备份到oldact里面
 	while(1){
+		printf("main doing...\n");
 		sleep(2);
 	}
 	return 0;
