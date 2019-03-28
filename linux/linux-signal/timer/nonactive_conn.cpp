@@ -17,20 +17,22 @@
 //
 #ifdef USE_TW_TIMER
 #include "tw_timer.h"
+#define TIMESLOT 1
+static time_wheel  timer_lst;
+#elif USE_HEAP_TIMER
+#include "time_heap.h"
+#define TIMESLOT 1
+static time_heap timer_lst(10);
 #else
 #include "lst_timer.h"
+#define TIMESLOT 5
+static sort_timer_lst timer_lst;
 #endif
 
 #define FD_LIMIT 65535
 #define MAX_EVENT_NUMBER 1024
 
-#ifdef USE_TW_TIMER
-#define TIMESLOT 1
-static time_wheel  timer_lst;
-#else
-#define TIMESLOT 5
-static sort_timer_lst timer_lst;
-#endif
+
 
 
 static int pipefd[2];
@@ -75,8 +77,12 @@ void addsig( int sig )
 
 void timer_handler()
 {
-    timer_lst.tick();
+	#ifdef USE_HEAP_TIMER
+    alarm(timer_lst.tick());
+  #else
+		timer_lst.tick();
     alarm( TIMESLOT );
+  #endif
 }
 
 void cb_func( client_data* user_data )
@@ -160,16 +166,23 @@ int main( int argc, char* argv[] )
                 
               #ifdef USE_TW_TIMER
 								tw_timer * timer=timer_lst.add_timer( 5 );
+							#elif USE_HEAP_TIMER
+							  heap_timer * timer = new heap_timer(5);
               #else
                	util_timer* timer = new util_timer;
                	time_t cur = time( NULL );
                	timer->expire = cur + 3 * TIMESLOT;
               #endif
+              
                 timer->user_data = &users[connfd];
                 timer->cb_func = cb_func;
                 users[connfd].timer = timer;
-              #ifndef USE_TW_TIMER
-               	timer_lst.add_timer(timer);
+                
+              #ifdef USE_TW_TIMER
+              #elif USE_HEAP_TIMER
+                timer_lst.add_timer( timer );
+              #else
+									timer_lst.add_timer( timer );
               #endif
                 
             }
@@ -214,6 +227,8 @@ int main( int argc, char* argv[] )
                 
               #ifdef USE_TW_TIMER
                 tw_timer* timer = users[sockfd].timer;
+              #elif USE_HEAP_TIMER
+                heap_timer* timer = users[sockfd].timer;
               #else
                 util_timer* timer = users[sockfd].timer;
               #endif
@@ -247,6 +262,8 @@ int main( int argc, char* argv[] )
 										timer->user_data = &users[sockfd];
 										timer->cb_func = cb_func;
 										users[sockfd].timer = timer;
+									#elif USE_HEAP_TIMER
+										timer_lst.adjust_timer( timer );
                   #else
                     if( timer )
                     {
