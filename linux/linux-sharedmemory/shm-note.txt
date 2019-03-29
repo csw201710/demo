@@ -1,0 +1,7 @@
+现在linux中可以使用共享内存的方式有两种
+
+    POSIX的shm_open()在/dev/shm/下打开一个文件，用mmap()映射到进程自己的内存地址
+
+    System V的shmget()得到一个共享内存对象的id，用shmat()映射到进程自己的内存地址
+
+
