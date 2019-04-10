@@ -1,0 +1,12 @@
+总结：在C++中。class和struct做类型定义时只有两点区别：
+　　（一）默认继承权限。如果不明确指定，来自class的继承按照private继承处理，来自struct的继承按照public继承处理；
+　　（二）成员的默认访问权限。class的成员默认是private权限，struct默认是public权限。
+　　除了这两点，class和struct基本就是一个东西。语法上没有任何其它区别。
+
+Struct能包含成员函数吗？
+Struct有自己的构造函数吗？
+Struct可以有析构函数么？
+Struct支持继承么？
+Struct支持多态么？
+Struct支持Private、Protected和Public关键字么？
+
