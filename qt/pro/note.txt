@@ -1,0 +1,71 @@
+$(varName)		makefile被处理时，环境变量的值(直接传递到Makefile中，由make进行处理该变量)
+$$(varName)		qmake运行时，环境变量的值 (qmake 将变量换成具体的值) 
+$$varName / $${varName}		qmake工程文件内定义变量的值  (何时加大括号？当变量和后面的字符连接到一块的时候。)
+$$[varName] 	Qt配置选项的值
+			1. 使用qmake预定义的变量
+			2. qmake -set Test 800 
+				可以在pro中 $$[Test] 直接使用
+	
+${varName}     //... 
+
+/*****************************************************************************************/
+lang.pri:
+	#获取当前目录下ts文件
+	TS_FILES += $$files(qbittorrent_*.ts)
+
+	# need to use full path, otherwise running
+	# `lupdate` will generate *.ts files in project root directory
+	for(file, TS_FILES) {
+		TRANSLATIONS += "$${PWD}/$${file}"
+	}
+	# 判断 QMAKE_LRELEASE 是否为空
+	isEmpty(QMAKE_LRELEASE) {
+		win32: QMAKE_LRELEASE = $$[QT_INSTALL_BINS]/lrelease.exe
+		else: QMAKE_LRELEASE = $$[QT_INSTALL_BINS]/lrelease
+		unix {
+			equals(QT_MAJOR_VERSION, 5) {
+				!exists($$QMAKE_LRELEASE): QMAKE_LRELEASE = lrelease-qt5
+			}
+		}
+		else {
+			!exists($$QMAKE_LRELEASE): QMAKE_LRELEASE = lrelease
+		}
+	}
+	# 输出字符串
+	message("Building translations")
+	
+	# $$replace(string, old_string, new_string) 替换字符串
+	TS_FILES_NOEXT = $$replace(TS_FILES, ".ts", "")
+	for(file, TS_FILES_NOEXT) {
+		message("Processing $${file}")
+		system("$$QMAKE_LRELEASE -silent $${file}.ts -qm $${file}.qm")
+		# 转换失败，报错
+		!exists("$${file}.qm"):error("Building translations failed, cannot continue")
+	}
+	
+	
+	
+/*****************************************************************************************/
+
+添加debug 和 release
+	#config
+	CONFIG+=debug_and_release
+	CONFIG(debug, debug|release){
+
+	}else{
+
+	}
+
+/*****************************************************************************************/
+
+
+
+
+
+
+
+
+
+
+
+
