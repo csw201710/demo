@@ -1,6 +1,7 @@
 /*
 	模拟boost::bind 函数写的例子
 */
+
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -17,6 +18,9 @@ using namespace std;
 //#define __SINGLE_FUC
 #define __TEMPLATE_FUC
 
+int show() {
+	return 110;
+}
 
 int add(int a, int b) {
 	return a + b;
@@ -45,15 +49,16 @@ struct type {};
 template <int i> 
 struct arg {};
 
+arg<1> _1;
+arg<1> _2;
+
 
 struct list0 {
-	template <class T>
-	T operator[](T v) {
-		return v;
-	}
-	template <class R ,class F, class L>
-	R operator()(type<R>,F f,L l) {
+	list0() {}
+	template<class R, class F, class L>
+	R operator() (type<R>, F f, L l) {
 		return f();
+
 	}
 };
 
@@ -94,6 +99,15 @@ struct bind_t {
 	}
 };
 
+//无参数函数
+template<class R>
+bind_t<R, R(*) (), list0 >
+bind(R(*f) ()) {
+	typedef list0 list_type;
+	return bind_t<R, R(*) (), list_type>(f, list_type());
+
+}
+
 //1. 函数类型可以拆分  R (*) (B1, B2)
 //2. 类型可以向下传递
 template<class R,class B1 ,class B2, class A1,class A2>
@@ -111,10 +125,9 @@ using namespace boost;
 #endif
 int main() {
 	printf("%d\n",bind(add, 2, 3)());
-	printf("%d\n", bind(add, 2, 3)(3,4));
+	printf("%d\n", bind(add, _1, _2)(3,4));
 
+	printf("%d\n", bind(show)());
 	return 0;
 }
-
-
 
