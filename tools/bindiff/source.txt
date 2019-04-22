@@ -1,0 +1,5 @@
+比较函数:
+	https://dl.google.com/dl/zynamics/bindiff430.msi bindiff 
+	https://github.com/joxeankoret/diaphora
+
+

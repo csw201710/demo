@@ -1,0 +1,11 @@
+	
+asio(no boost)
+	1. Change to the asio src directory.
+	2. Execute the command nmake -f Makefile.msc STANDALONE=1 DEBUG=1 SEPARATE_COMPILATION=1.
+	3. Execute the command nmake -f Makefile.msc STANDALONE=1 DEBUG=1 SEPARATE_COMPILATION=1 check to run a suite of tests to confirm that asio is working correctly. 
+	
+	//1.在工程属性"c++/预处理器/预处理器定义"中加入下面两个宏定义
+		_WIN32_WINNT=0x0A00
+		ASIO_STANDALONE
+	//2. 设置多字节
+
