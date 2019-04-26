@@ -1,0 +1,70 @@
+git push:
+		$ git push origin master
+	上面命令表示，将本地的master分支推送到origin主机的master分支。如果master不存在，则会被新建。
+	
+	如果省略本地分支名，则表示删除指定的远程分支，因为这等同于推送一个空的本地分支到远程分支。
+		$ git push origin :master
+		# 等同于
+		$ git push origin --delete master	
+	上面命令表示删除origin主机的master分支。如果当前分支与远程分支之间存在追踪关系，则本地分支和远程分支都可以省略。
+
+		$ git push origin   or  $ git push
+		
+	上面命令表示，将当前分支推送到origin主机的对应分支。如果当前分支只有一个追踪分支，那么主机名都可以省略。
+		
+	如果当前分支与多个主机存在追踪关系，则可以使用-u选项指定一个默认主机，这样后面就可以不加任何参数使用git push。
+		$ git push -u origin master
+
+	默认的push.default是simple模式，要求两边分支同名，而upstream模式则不做这个要求
+		$ git config --global push.default upstream
+	
+	推送本地分支到远程的不同名分支	
+		$ git push -u origin my_branch:remote_branch
+	
+	恢复被删除的分支	
+		在已知提交的散列值的情况下恢复某个分支：
+			git branch <branch_name> <hash_val>
+		如果我们不知道想要恢复的分支的散列值，可以用reflog命令将它找出来
+			git reflog
+		
+git reflog:
+	显示整个本地仓储的commit，包括所有branch的commit，甚至包括已经撤销的commit。
+	只要HEAD发生了变化， 就会在reflog里面看得到。
+		
+	
+git stash(储藏与清理):
+	修改的跟踪文件与暂存改动 - 然后将未完成的修改保存到一个栈上，而你可以在任何时候重新应用这些改动。
+	
+	储藏工作:
+		git stash 或 git stash save
+		默认情况下，git stash 只会储藏已经在索引中的文件。 
+		如果指定 --include-untracked 或 -u 标记，Git 也会储藏任何创建的未跟踪文件。
+		
+	要查看储藏的东西:
+		可以使用 git stash list
+	恢复储藏:
+		可以通过原来 stash 命令的帮助提示中的命令将你刚刚储藏的工作重新应用
+			git stash apply。 
+		如果想要应用其中一个更旧的储藏，可以通过名字指定它，像这样
+			git stash apply stash@{2}
+		如果不指定一个储藏，Git 认为指定的是最近的储藏：
+		
+git clean:(清理文件)
+	git clean -i  //交互式提示
+	
+git branch：
+	查看分支:
+		git branch
+	创建分支:
+		git branch <name>
+	切换分支:
+		git checkout <name>
+	创建+切换分支:
+		git checkout -b <name>
+	合并某分支到当前分支:
+		git merge <name>
+	删除分支:
+		git branch -d <name>
+	
+	
+
