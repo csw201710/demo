@@ -75,7 +75,7 @@ public:
 			}
 			err = inflate(&m_strm, Z_NO_FLUSH);
 			if (Z_STREAM_END == err) {
-				return 0;
+				break;
 			}
 			if (err != Z_OK) {
 				printf("inflate failed ret%d", err);
@@ -88,7 +88,7 @@ public:
 		}
 		raw_read+=lastavail - m_strm.avail_out;
 		//read = Count - m_strm.avail_out;
-		return Count;
+		return Count - m_strm.avail_out;
 
 	}
 private:
