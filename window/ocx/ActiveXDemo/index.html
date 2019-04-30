@@ -1,0 +1,50 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gbk" />
+    <title>test</title>
+
+<!-- 
+	regsvr32 /s "D:\work\workspace\workspace-vs\ActiveXDemo\Release\ActiveXDemo.ocx
+-->
+</head>
+<body style="text-align:center;">
+
+	 <!--定义activex控件，classid值为"ocxdemo.idl"中"coclass ocxdemo"的特性值-->
+    <object id="objadd" name="this is name" style="left: 0px; width: 30%; top: 0px; height: 30%"
+        classid="clsid:0153809B-60ED-402B-9EF2-8F46E2176C6D"> </object>
+    <br /><br /><br /><br /><br /><br />
+
+    <button name="add" onclick="executeAddFun();" style="width: 60px; height: 30px">
+	Add
+    </button>
+	<br /><br /><br /><br /><br /><br />
+
+   
+</body>
+</html>
+
+<script type="text/javascript" for="objadd" event="cb_add(a,b)">
+    callback(a, b);
+</script>
+
+<script type="text/javascript">
+    function executeAddFun() {
+        try {
+            var ct = document.getElementById("objadd");
+			if(ct){
+				var rt = ct.Add(321, 321);
+				//alert("321+321=" + rt );
+				alert("321+321=" + rt + '\n' + ct.showString('this is test 测试'));
+			}else{
+				alert("not found object");
+			}
+            
+        } catch (e) {
+            alert(e);
+        }
+    }
+
+    function callback(a, b) {
+        alert("callback：" + a + "|" + b);
+    }
+</script>

@@ -1,0 +1,54 @@
+// ActiveXDemo.idl : ActiveX 控件项目的类型库源。
+
+// 此文件将由 MIDL 编译器工具处理以
+// 产生类型库(ActiveXDemo.tlb)，该类型库将成为
+// ActiveXDemo.ocx.
+//计算机\HKEY_LOCAL_MACHINE\SOFTWARE\Classes\WOW6432Node\CLSID\{0153809B-60ED-402B-9EF2-8F46E2176C6D}\Control
+#include <olectl.h>
+#include <idispids.h>
+
+[ uuid(6C8A24C1-5F75-4555-B893-051B3A7D255A), version(1.0),
+  control ]
+library ActiveXDemoLib
+{
+	importlib(STDOLE_TLB);
+
+	//  CActiveXDemoCtrl 的主调度接口
+	[ 
+		uuid(7FA6A843-6D85-4825-BB00-E0EF3F48BEFB)	
+	]
+	dispinterface _DActiveXDemo
+	{
+		properties:
+		methods:
+
+			[id(DISPID_ABOUTBOX)] void AboutBox();
+			[id(1)] LONG Add(LONG a1, LONG a2);
+			[id(2)] BSTR showString(BSTR msg);
+	};
+
+	//  CActiveXDemoCtrl 的事件调度接口
+
+	[ 
+		uuid(2B04342B-BC5E-442B-9EC2-84076F8A2CE5)	
+	]
+	dispinterface _DActiveXDemoEvents
+	{
+		properties:
+			//  事件接口没有任何属性
+
+		methods:
+			[id(1)] void cb_add(DOUBLE a1, DOUBLE a2);
+	};
+
+	//  CActiveXDemoCtrl 的类信息
+	[
+		uuid(0153809B-60ED-402B-9EF2-8F46E2176C6D)
+	]
+	coclass ActiveXDemo
+	{
+		[default] dispinterface _DActiveXDemo;
+		[default, source] dispinterface _DActiveXDemoEvents;
+	};
+
+};
