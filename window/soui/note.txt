@@ -1,0 +1,156 @@
+
+soui:
+XML_INIT必须是以UIDEF为唯一根节点
+	在UIDEF下，可以定义font，string，skins，style，objattr五个子节点。
+		font定义SOUI中使用的默认字体，只有face和size两个属性。
+		string是一个字符串表，定义一个"name-字符串"映射，在布局的XML文件中可以通过引用字符串的name来获得字符串。	
+		skins定义SOUI中使用的全局窗口元素绘制对象，每一个对象都对应一个SOUI::ISkinObj的派生类。
+			
+	skins
+		SOUI系统默认实现了SSkinImgList(imglist), SSkinImgFrame(imgframe), SSkinButton(button), SSkinGradation(gradation), SSkinScrollbar(scrollbar), SSkinMenuBorder(border)这几种绘图类型。SSkinImgList为SOUI中的C++类名，imglist为在skins节点中的元素类型名。
+		1.imglist
+			imglist 是一个图片序列对象，可以包含一组小图片，常见的如按钮需要使用的4种状态图。
+			
+			imglist 包含4个属性：
+				SOUI_ATTRS_BEGIN()
+					ATTR_CUSTOM(L"src", OnAttrImage)    //skinObj引用的图片文件定义在uires.idx中的name属性。
+					ATTR_INT(L"tile", m_bTile, TRUE)    //绘制是否平铺,0--位伸（默认），其它--平铺
+					ATTR_INT(L"vertical", m_bVertical, TRUE)//子图是否垂直排列，0--水平排列(默认), 其它--垂直排列
+					ATTR_INT(L"states",m_nStates,TRUE)  //子图数量,默认为1
+				SOUI_ATTRS_END()
+
+			假定上图的图片在uires.idx中的定义为：
+				<imgx>
+				　　<file name='btn_next' file='image\btn.next.png'/>
+				</imgx>
+
+			要在soui中引用这个图片，需要在init.xml的skins结节中做如下声明：
+				<skins>
+					<imglist name=“skin_btn_next" src="imgx:btn_next" states="4" tile="0" vertical="0"/>
+				</skins>
+			在上面的skin定义中，
+				name属性告诉系统如何引用定义的imglist
+				src属性定义该skin需要使用哪一个图片资源，资源引用格式为type:name，如上面使用的imgx:btn_next，对于图片资源，通常情况下也可以不指定type,系统会自动在常用的图片类型下查找，但不建议这样使用。
+				states定义图中包含多少个子图
+				title定义图片在放大显示时时平铺还是拉伸，默认为拉伸
+				vertical属性定义图中的子图的排列方式
+				
+		2. imgframe
+			imgframe是一个提供九宫格显示的绘图对象，SSkinImgFrame派生自SSkinImgList，因此imgframe也拥有imglist的全部属性。
+				此外，imgframe提供了几个新的属性;
+				
+				SOUI_ATTRS_BEGIN()
+					ATTR_INT(L"left", m_rcMargin.left, TRUE)        //九宫格左边距
+					ATTR_INT(L"top", m_rcMargin.top, TRUE)          //九宫格上边距
+					ATTR_INT(L"right", m_rcMargin.right, TRUE)      //九宫格右边距
+					ATTR_INT(L"bottom", m_rcMargin.bottom, TRUE)    //九宫格下边距
+					ATTR_INT(L"margin-x", m_rcMargin.left=m_rcMargin.right, TRUE)//九宫格左右边距
+					ATTR_INT(L"margin-y", m_rcMargin.top=m_rcMargin.bottom, TRUE)//九宫格上下边距
+				SOUI_ATTRS_END()
+			
+			imgframe的格式如上图，在imgframe中通过left, top, right, bottom来定义九宫格。
+		
+		3、button
+			button绘图对象是绘制按钮时使用的，它使用渐变实现绘制按钮的4种状态。
+			包含以下属性：
+				SOUI_ATTRS_BEGIN()
+					ATTR_COLOR(L"colorBorder", m_crBorder, TRUE)                //边框颜色
+					ATTR_COLOR(L"colorUp", m_crUp[ST_NORMAL], TRUE)             //正常状态渐变起始颜色
+					ATTR_COLOR(L"colorDown", m_crDown[ST_NORMAL], TRUE)         //正常状态渐变终止颜色
+					ATTR_COLOR(L"colorUpHover", m_crUp[ST_HOVER], TRUE)         //浮动状态渐变起始颜色
+					ATTR_COLOR(L"colorDownHover", m_crDown[ST_HOVER], TRUE)     //浮动状态渐变终止颜色
+					ATTR_COLOR(L"colorUpPush", m_crUp[ST_PUSHDOWN], TRUE)       //下压状态渐变起始颜色
+					ATTR_COLOR(L"colorDownPush", m_crDown[ST_PUSHDOWN], TRUE)   //下压状态渐变终止颜色
+					ATTR_COLOR(L"colorUpDisable", m_crUp[ST_DISABLE], TRUE)     //禁用状态渐变起始颜色
+					ATTR_COLOR(L"colorDownDisable", m_crDown[ST_DISABLE], TRUE) //禁用状态渐变终止颜色
+				SOUI_ATTRS_END()
+		4、gradation
+			渐变绘图对象，提供3个属性：
+				SOUI_ATTRS_BEGIN()
+					ATTR_COLOR(L"colorFrom", m_crFrom, TRUE)    //渐变起始颜色
+					ATTR_COLOR(L"colorTo", m_crTo, TRUE)        //渐变终止颜色
+					ATTR_INT(L"vertical", m_bVert, TRUE)        //渐变方向,0--水平(默认), 1--垂直
+				SOUI_ATTRS_END()
+				
+		5、scrollbar
+			滚动条皮肤，虽然它派生自imglist，实际上imglist中实现的属性在scrollbar中没有意义，只是为了省点代码。
+				SOUI_ATTRS_BEGIN()
+					ATTR_INT(L"margin",m_nMargin,FALSE)             //边缘不拉伸大小
+					ATTR_INT(L"hasGripper",m_bHasGripper,FALSE)     //滑块上是否有帮手(gripper)
+					ATTR_INT(L"hasInactive",m_bHasInactive,FALSE)   //是否有禁用态
+				SOUI_ATTRS_END()
+				
+		6、border
+			给menu用的
+			
+	style
+		在style节点中，定义UI布局中SOUI窗口对象的属性集合，它们是SWindow对象的属性，所有SWindow对象都可以通过class属性来引用style节点中定义的属性集合。
+	
+	objattr
+		控件的默认属性。
+		SOUI可以为每一类UI控件通过objattr来提供一种默认属性集合，以减少在XML布局中的重复定义。
+		
+
+	布局:<SOUI></SOUI>
+		在根节点下有3个节点，分别是skin, style及root。
+		skin, 和style和前一篇讲的init.xml的功能一样。不同在于在布局文件中定义的skin及style只在当前窗口的生命周期期间有效，类似于C++函数中的局部变量，窗口关闭后这些对象会自动析构。我称之为局部skin及局部style。
+		窗口中控件的布局信息定义在root节点中。
+		root节点本身也是一个SWindow窗口对象，但是在这里必须是"root"才能识别，在这个节点中可以有SWindow的各种属性，但是和布局位置相关的属性自动无效，因为该窗口总是充满整个宿主窗口。
+		在root节点下可以按照不同的布局层次采用锚点布局方式布局各种系统内置控件及用户自定义控件。
+
+		tabctl -> page
+			include只有一个属性：src，src定义如何去引用在另一个XML文件中定义的布局XML，如“layout:page_layout”代表这里要引用在layout资源类型中定义的name为page_layout的XML文件
+			
+	SOUI的锚点布局:		
+		SOUI布局全部采用相对坐标，由pos,offset(pos2type), size, width,height 这几个个窗口属性配合指定
+		size, width, height属性
+			size, width, height比较简单，是用来指定窗口的大小的，只有在pos属性指定的值个数不为4时生效。
+			size是2014年底增加的布局属性，size="width,height"。
+			width, height可以有3种值：full,-1,非负整数。
+				为full时，代表高度或者宽度和父窗口的客户区大小相等。
+				-1代表根据窗口内容自动计算窗口大小。
+				非负整数直接指定窗口大小。
+		在文本控件中，还可以指定一个maxWidth属性，控件是文本内容的大小，但宽度不超过maxWidth。
+		
+		pos属性
+			pos属性可以指定4个值，也可以指定2个值。指定4个值时，分别代表控件的left,top,right,bottom,指定两个值时代表控件的x,y，具体位置还依赖于另外3个参数。
+			指定4个值时，pos目前支持7种标志：|,%,[,],{,},@
+
+				“|”代表参考父窗口的中心；如|-10代表在父窗口的中心向左/上偏移10象素。
+
+				“%”代表在父窗口的百分比，可以是小数，负数。如：%40代表在父窗口的40%位置，%-40则等价于(1-40%)。
+
+				“[”相对于前一兄弟窗口。用于X时，参考前一兄弟窗口的right，用于Y时参考前一兄弟窗口的bottom
+
+				“]”相对于后一兄弟窗口。用于X时，参考后一兄弟的left,用于Y时参考后一兄弟的top
+
+				“{”相对于前一兄弟窗口。用于X时，参考前一兄弟窗口的left，用于Y时参考前一兄弟窗口的top
+
+				“}”相对于后一兄弟窗口。用于X时，参考后一兄弟的right,用于Y时参考后一兄弟的bottom
+
+				“@”标志用来指定窗口的大小，只能出现在pos属性的第3，4个值中，用来标识窗口的宽度。当后面的值为负时，代表自动计算窗口的宽度或者高度（2015.3.3新增加解释）。	
+				
+			注：“|“, "[" ,"]", "{", "}" 中指定的值都可以为正或者负，正时向右或者下偏移，负则向左或者上偏移。
+				当没有上述标志时，负号代表参考父窗口的右边或者下边缩进绝对值位置。如：pos="0,0,-0,-0"代表占满父窗口。而pos="10,10,-10,-10"则代表在父窗口的基础上向内全部缩进10点。		
+				@:指定窗口的size。只能用于x2,y2，用于x2时，指定窗口的width，用于y2时指定窗口的height。注：只能为正值，负号会自动忽略。
+				其中“{”和“}”是SOUI在DUIENGINE的基础上新增加的布局标志
+				注意!!!由于系统运行向前及向后引用，理论上有可能出来循环引用，导致界面布局失败，因此在使用"["，"{"，“}” 和"]"这几个标志时需要特别注意。
+					当pos只指定了x1,y1时，通常需要和offset(或者pos2type),size(或者width,height)配合使用。
+		
+		offset及pos2type属性
+			offset属性是SOUI在通过pos属性完成坐标定位后再将坐标进行偏移的属性，属性中包含两个值，分别对应X，Y方向的平移相对于窗口大小的倍数
+			pos2type可以定义9个参考点：center, lefttop, leftmid, leftbottom,midtop,midbottom,righttop,rightmid,rightbottom。
+				pos2type 	offset
+				center 	-0.5,-0.5
+				lefttop 	0,0
+				leftmid 	0,-0.5
+				leftbottom 	0,-1
+				midtop 	-0.5,0
+				midbottom 	-0.5,-1
+				righttop 	-1,0
+				rightmid 	-1,-0.5
+				rightbottom 	-1,-1
+				
+			从上表可以看出，原来的pos2type属性只能是0.5的倍数，新的offset属性没有该限制	
+			
+
