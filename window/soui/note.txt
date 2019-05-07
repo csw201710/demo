@@ -154,3 +154,25 @@ XML_INIT必须是以UIDEF为唯一根节点
 			从上表可以看出，原来的pos2type属性只能是0.5的倍数，新的offset属性没有该限制	
 			
 
+
+
+事件:
+	BOOL SWindow::FireEvent(EventArgs &evt)
+	1. 先调用事件订阅的处理方法，再调用脚本事件处理方法，后处理宏定义的事件，根据中途处理情况可中断调用，直接返回。
+	2. 注册事件:
+		SWindow *pWnd = FindChildByName("btn_browser");
+		pWnd->GetEventSet()->subscribeEvent(EVT_MOUSE_HOVER,Subscriber(&CMainWnd::On_MouseHoverClick,this));
+		
+		bool On_MouseHoverClick(EventArgs *pEvtBase){
+			::OutputDebugString(TEXT("On_MouseHoverClick called\n"));
+			return true;
+		}
+	
+
+绘图:
+SIPAddressCtrl(默认读取所有属性，调用InitFromXml -> SetAttribute 设置对象继承的类成员变量):
+		-> OnCreate  //创建4个 SEditIP，设置属性 <ipedit margin=\"0\" number=\"1\" transparent=\"1\" align=\"center\" maxBuf=\"3\" mouseRelay=\"1\"/>
+		-> OnSize    //动态调整4个 输入框位置，相隔2个大小。
+		-> OnPaint(WM_PAINT)   // 绘制控件
+		-> WM_NCPAINT //处理WM_NCPAINT消息可以实现自绘窗口边框和标题栏
+
