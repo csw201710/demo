@@ -67,4 +67,28 @@ git branch：
 		git branch -d <name>
 	
 	
+git tag:
+	轻量级标签:
+		git tag v1.0
+		git show v1.0
+	
+	标签发布:
+		默认情况下，git push 并不会把标签传送到远端服务器上，只有通过显式命令才能分享标签到远端仓库。其命令格式如同推送分支
+			git push origin [tagname]
+		
+	git tag -a v1.0 -m 'my version 1.0'
+		-a 指定标签名字
+		-m 选项则指定了对应的标签说明
+	
+	要一次推送所有本地新增的标签上去，可以使用 --tags
+	
+	打标签不必要在head之上，也可在之前的版本上打，这需要知道历史某个提交
+		git tag -a v0.1.1 5fb3d0
+		
+	删除标签
+		git tag -d v0.1.2 # 删除标签 
+	
+https://segmentfault.com/q/1010000011005814?sort=created
+git filter-branch --tree-filter 'rm -f 文件名' HEAD
+
 

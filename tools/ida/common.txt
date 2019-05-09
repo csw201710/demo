@@ -1,0 +1,7 @@
+IDA修改指令或十六进制:
+	标高亮的地方就是 CMP 指令，鼠标右键选 Edit... 或按 F2 进入编辑模式
+		然后鼠标右键选 Apply changes 或按 F2 应用修改
+
+	IDA 可以直接修改指令
+		在指令上鼠标右键选 Keypatch -> patcher 或 按快捷键 Ctrl + Alt + K 然后直接修改即可
+
