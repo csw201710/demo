@@ -1,0 +1,178 @@
+ASN1 (SM2CiphertextValue): 
+	//ASN1 结构定义及函数实现
+	ASN1_SEQUENCE(SM2CiphertextValue) = {
+		ASN1_SIMPLE(SM2CiphertextValue, xCoordinate, BIGNUM),
+		ASN1_SIMPLE(SM2CiphertextValue, yCoordinate, BIGNUM),
+		ASN1_SIMPLE(SM2CiphertextValue, hash, ASN1_OCTET_STRING),
+		ASN1_SIMPLE(SM2CiphertextValue, ciphertext, ASN1_OCTET_STRING),
+	} ASN1_SEQUENCE_END(SM2CiphertextValue)
+	DECLARE_ASN1_FUNCTIONS(SM2CiphertextValue)  //d2i i2d new free 函数声明
+	IMPLEMENT_ASN1_FUNCTIONS(SM2CiphertextValue)   //d2i i2d new free 函数实现
+	IMPLEMENT_ASN1_DUP_FUNCTION(SM2CiphertextValue) // SM2CiphertextValue_dup
+
+	//结构体
+	typedef struct SM2CiphertextValue_st {
+		BIGNUM *xCoordinate;
+		BIGNUM *yCoordinate;
+		ASN1_OCTET_STRING *hash;
+		ASN1_OCTET_STRING *ciphertext;
+	} SM2CiphertextValue;
+
+	struct ASN1_TEMPLATE_st {
+		unsigned long flags;        /* Various flags */
+		long tag;                   /* tag, not used if no tagging */
+		unsigned long offset;       /* Offset of this field in structure */
+		const char *field_name;     /* Field name */
+		ASN1_ITEM_EXP *item;        /* Relevant ASN1_ITEM or ASN1_ADB */
+	};
+	
+	struct ASN1_ITEM_st {
+		char itype;                 /* The item type, primitive, SEQUENCE, CHOICE
+									 * or extern */
+		long utype;                 /* underlying type */
+		const ASN1_TEMPLATE *templates; /* If SEQUENCE or CHOICE this contains
+										 * the contents */
+		long tcount;                /* Number of templates if SEQUENCE or CHOICE */
+		const void *funcs;          /* functions that handle this type */
+		long size;                  /* Structure size (usually) */
+		const char *sname;          /* Structure name */
+	};
+	
+		//宏
+		# define ASN1_SIMPLE(stname, field, type) ASN1_EX_TYPE(0,0, stname, field, type)
+		
+		# define ASN1_EX_TYPE(flags, tag, stname, field, type) { \
+			(flags), (tag), offsetof(stname, field),\
+			#field, ASN1_ITEM_ref(type) }
+		//宏扩展
+		static const ASN1_TEMPLATE SM2CiphertextValue_seq_tt[] ={
+			{(0),(0),offsetof(SM2CiphertextValue,xCoordinate),"xCoordinate",ASN1_ITEM_ref(BIGNUM)},
+			{(0),(0),offsetof(SM2CiphertextValue,yCoordinate),"yCoordinate",ASN1_ITEM_ref(BIGNUM)},
+			
+		}
+		
+		
+		
+		
+		//宏
+		# define ASN1_SEQUENCE_END_name(stname, tname) \
+        ;\
+        ASN1_ITEM_start(tname) \
+                ASN1_ITYPE_SEQUENCE,\
+                V_ASN1_SEQUENCE,\
+                tname##_seq_tt,\
+                sizeof(tname##_seq_tt) / sizeof(ASN1_TEMPLATE),\
+                NULL,\
+                sizeof(stname),\
+                #stname \
+        ASN1_ITEM_end(tname)
+		
+			//宏扩展
+			OPENSSL_GLOBAL const ASN1_ITEM SM2CiphertextValue_it = {
+				0x1,
+				16,
+				SM2CiphertextValue_seq_tt,
+				sizeof(SM2CiphertextValue_seq_tt) / sizeof(ASN1_TEMPLATE),
+				NULL,
+				sizeof(SM2CiphertextValue),
+				"SM2CiphertextValue"
+			};
+				
+		
+例子:
+
+
+		#define ECCref_MAX_BITS 256 
+
+		#define ECCref_MAX_LEN ((ECCref_MAX_BITS+7) / 8)
+
+		typedef struct ECCrefPublicKey_st
+
+		{
+
+			 unsigned int bits;
+
+			 unsigned char x[ECCref_MAX_LEN]; 
+
+			 unsigned char y[ECCref_MAX_LEN]; 
+
+		} ECCrefPublicKey;
+
+		typedefstruct ASN_ECCPUBLICKEY_st
+
+		{
+
+			   ASN1_OCTET_STRING *X;
+
+			   ASN1_OCTET_STRING *Y;
+
+		}ASN_ECCPUBLICKEY;
+
+		DECLARE_ASN1_FUNCTIONS(ASN_ECCPUBLICKEY)
+
+
+		SN1_SEQUENCE(ASN_ECCPUBLICKEY) = {
+		 
+			ASN1_SIMPLE(ASN_ECCPUBLICKEY, X, ASN1_OCTET_STRING),
+			ASN1_SIMPLE(ASN_ECCPUBLICKEY, Y, ASN1_OCTET_STRING),
+		 
+		} ASN1_SEQUENCE_END(ASN_ECCPUBLICKEY);
+		 
+		IMPLEMENT_ASN1_FUNCTIONS(ASN_ECCPUBLICKEY)
+		 
+		int i2d_ECC_PublicKey(const ECCrefPublicKey *cipher, unsigned char **out)
+		{
+			ASN_ECCPUBLICKEY *ec = NULL;
+			int             len = 0;
+		 
+			ec = ASN_ECCPUBLICKEY_new();
+			if (ec == NULL) {
+				return 0;
+			}
+		 
+			do {
+				if (!ASN1_OCTET_STRING_set(ec->X, cipher->x, 32))
+					break;
+		 
+				if (!ASN1_OCTET_STRING_set(ec->Y, cipher->y, 32))
+					break;
+		 
+				/* i2d */
+				len = i2d_ASN_ECCPUBLICKEY(ec, out);
+		 
+			} while (0);
+		 
+			ASN_ECCPUBLICKEY_free(ec);
+		 
+			return len;
+		}
+		 
+		int d2i_ECC_PublicKey(ECCrefPublicKey *ins, const unsigned char **ppin, long pplen)
+		{
+			ASN_ECCPUBLICKEY *ec = NULL;
+		 
+			/* DECODE */
+			ec = d2i_ASN_ECCPUBLICKEY(NULL, ppin, pplen);
+			if (ec == NULL) {
+				return 0;
+			}
+		 
+			/* check version ? */
+			do {
+				if (ec->X->length <= 0 || ec->Y->length <= 0)
+					break;
+				memcpy(ins->x, ec->X->data, ec->X->length);
+		 
+				memcpy(ins->y, ec->Y->data, ec->Y->length);
+		 
+				ASN_ECCPUBLICKEY_free(ec);
+				return 1;
+		 
+			} while(0);
+		 
+			ASN_ECCPUBLICKEY_free(ec);
+			return 1;
+		}
+		
+
+
