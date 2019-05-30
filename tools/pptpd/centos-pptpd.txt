@@ -1,0 +1,39 @@
+启用IP转发
+	vim /etc/sysctl.conf 	 
+	net.ipv4.ip_forward = 1
+	sysctl -p #命令生效
+	
+iptables	
+	安装iptables:
+		#先检查是否安装了iptables
+		service iptables status
+		#安装iptables
+		yum install -y iptables
+		#升级iptables
+		yum update iptables 
+		#安装iptables-services
+		yum install iptables-services
+	显示nat规则:
+		iptables -t nat --list -n --line-number -v	
+	删除nat规则
+		iptables -t nat -D POSTROUTING 1
+
+	开启包转发：
+		iptables -t nat -A POSTROUTING -s 192.168.3.0/24   -o ens33 -j MASQUERADE
+		service iptables save && service iptables restart    //保存 重新加载生效
+
+	
+firewall:
+	设置IP地址伪装
+		firewall-cmd --zone=external --add-masquerade --permanent
+	
+	修改网卡的zone
+		firewall-cmd --permanent --zone=external --change-interface=eth0 
+		firewall-cmd --permanent --zone=internal --change-interface=eth1
+		
+	设置NAT规则
+		firewall-cmd --permanent --direct --passthrough ipv4 -t nat POSTROUTING -o eth0 -j MASQUERADE -s 192.168.100.0/24
+	
+	重载Firewall使配置生效
+		firewall-cmd --reload 
+
