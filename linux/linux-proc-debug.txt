@@ -1,0 +1,24 @@
+先用top命令找出占用资源厉害进程id
+	top
+用top命令单独对这个进程12377中的所有线程作监视
+	top -p 12377 -H
+
+1、查看进程的线程：
+	ps -eLf|egrep 'gateserver|UID'
+
+2、跟踪线程调用：
+	strace -p 15530
+
+3、统计线程中函数的调用小号CPU时间：
+	strace -p 16334 -c
+	strace -p 15530 -o out.file #输出到out.file文件
+
+4、只显示recv函数的调用:
+	strace -p 5314 -f -F -e recv
+
+5、gdb调试线程：
+	gdb -p pid
+
+6、查看线程打开的文件描述符：
+	lsof -p pid
+
