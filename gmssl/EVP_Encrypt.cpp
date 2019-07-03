@@ -48,6 +48,7 @@ int main(int argc,char *argv[]){
 		inbufLen = i;
 		SM4_encrypt(inbuf,inbufLen,outbuf,&outbufLen,1);
 		SM4_encrypt(outbuf,outbufLen,decoutbuf,&decoutbufLen,0);
+		decoutbuf[decoutbufLen] = '\0'; // 每16字节为一组，不足的字节填充补位长度 
 		if(memcmp(inbuf,decoutbuf,inbufLen) != 0 || decoutbufLen != inbufLen){
 			printf("error\n");
 			break;
