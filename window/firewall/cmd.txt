@@ -1,0 +1,4 @@
+添加防火墙信任程序:
+	netsh advfirewall firewall del rule name = "xx.exe" dir=in program = "C:\Users\xxxx\Downloads\xx.exe"
+	netsh advfirewall firewall add rule name = "xx.exe" dir=in program = "C:\Users\xxxx\Downloads\xx.exe" action="allow"
+
