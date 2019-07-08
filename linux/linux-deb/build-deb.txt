@@ -1,0 +1,102 @@
+#需要打包的目录
+sudo mkdir apache-traffic
+
+#打包控制文件创建
+cd /data/apache-traffic
+sudo mkdir DEBIAN
+
+#控制文件
+cd DEBIAN
+
+#创建文件
+sudo touch control conffiles md5sums config preinst postinst prerm postrm templates
+
+#授权
+sudo chmod 755 control conffiles md5sums config preinst postinst prerm postrm templates
+
+control : 用了记录软件标识，版本号，平台，依赖信息等数据
+conffiles : 当软件包升级的时候，你将会被询问是否要保留你的旧配置文件。
+md5sums : md5校验
+config : 启动配置
+preinst : Debian软件包(".deb")解压前执行的脚本, 为正在被升级的包停止相关服务,直到升级或安装完成.(成功后
+执行 'postinst' 脚本).
+postinst : 在解包后运行的脚本,主要完成软件包(".deb")安装完成后所需的配置工作. 通常, postinst 脚本要求用
+户输入, 和/或警告用户如果接受默认值, 应该记得按要求返回重新配置这个软件. 一个软件包安装或升级完成后。
+prerm : 卸载时，在删除文件之前运行的脚本（停止一个软件包的相关进程, 要卸载软件包的相关文件前执行。）
+postrm : 在删除文件之后运行的脚本（修改相关文件或连接, 和/或卸载软件包所创建的文件）
+templates : 定制模板
+
+其中 preinst, postinst, prerm, 和 postrm 脚本，是软件包安装前后自动运行的可执行脚本. 统称为控制文件,
+是 Deian 软件包的"控制"部分
+
+
+
+
+
+
+
+
+制作deb包过程：
+
+1. 制作如下目录及文件
+
+所有目录及文件:
+
+.
+└── deb
+    ├── DEBIAN
+    │   ├── conffiles
+    │   ├── config
+    │   ├── control
+    │   ├── md5sums
+    │   ├── postinst
+    │   ├── postrm
+    │   ├── preinst
+    │   ├── prerm
+    │   └── templates
+    └── tmp
+        └── mydeb.txt
+
+
+	   
+2. 打包
+$ dpkg -b deb mydeb.deb #第一个参数为将要打包的目录名，
+                          #第二个参数为生成包的名称
+
+
+3. 常用命令
+	查看已安装deb包文件列表
+		dpkg-query -L cdos-screensaver  /  dpkg --listfiles cdos-screensaver
+		
+	查看已安装deb包文件信息:
+		dpkg -s cdos-screensaver
+		
+	
+	
+
+		 
+	
+	查看deb文件中的内容
+		dpkg-deb -c mydeb.deb
+
+	查看deb包信息
+		dpkg --info mydeb.deb
+	
+	
+	
+	
+	dpkg -i deb文件名    //安装
+	dpkg -r 软件名    //卸载
+
+	解压deb包中所要安装的文件
+		$ dpkg -X   mydeb.deb   mydeb    # 第一个参数为所要解压的deb包，这里为 mydeb.deb
+										 # 第二个参数为将deb包解压到指定的目录，这里为 mydeb
+				
+	解压deb包中DEBIAN目录下的文件（至少包含control文件）
+		$ dpkg -e   mydeb.deb   mydeb/DEBIAN    # 第一个参数为所要解压的deb包，
+												# 这里为 mydeb.deb
+												# 第二个参数为将deb包解压到指定的目录，
+												# 这里为 mydeb/DEBIAN
+
+
+
