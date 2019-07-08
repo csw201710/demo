@@ -1,0 +1,12 @@
+[Desktop Entry]
+Categories=Application;Utility;
+Encoding=UTF-8
+Exec=/usr/bin/rekols-monitor
+Icon=apps.com.onlinego
+Name=Rekols Monitor
+Name[zh_CN]=系统监视悬浮窗
+Name[zh_TW]=系统监视悬浮窗
+StartupNotify=false
+Terminal=false
+Type=Application
+X-MultipleArgs=false
