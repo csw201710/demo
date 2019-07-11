@@ -1,0 +1,22 @@
+echo  -n "Please :"
+
+read  num
+if [[ ! $num =~ ^-?[0-9]+$  ]] ||  [[ $num > $listSize ]] ; then
+  echo "input is invalid"
+  exit
+fi
+
+read -r -p "Whether [Y/n]:" input_conf
+case $input_conf in 
+  [yY][eE][sS]|[yY]) 
+	echo "yes"
+  ;;
+  [nN][oO]|[nN]) 
+    echo "no"
+  ;;
+  *)
+  echo "Invalid input..." 
+  exit 1 
+  ;; 
+esac
+
