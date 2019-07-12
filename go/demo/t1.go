@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"sort"
 )
 
 func GetAllFiles(dirPth string) (files []string, err error) {
@@ -73,7 +74,10 @@ func readFileLine(filePath string, startLine int, lineCount int) (lines []string
 	for i := 0; i < lineCount; i++ {
 
 		l, err := rd.ReadString('\n')
-		if err != nil && err != io.EOF {
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
 			panic(err)
 		}
 
@@ -181,10 +185,10 @@ func checkFile(filePath string, data string) (startLine int) {
 
 func insertData(filePath string, data string) (err error) {
 	startPos := checkFile(filePath, data)
-	if startPos% 100 == 0{
-		fmt.Printf("insertData startPos : %d\n", startPos)	
+	if startPos%100 == 0 {
+		fmt.Printf("insertData startPos : %d\n", startPos)
 	}
-	
+
 	if startPos != 0 {
 		f, err := os.Open(filePath)
 		if err != nil {
@@ -236,6 +240,34 @@ func insertData(filePath string, data string) (err error) {
 
 }
 
+func readFileAllLine(filePath string, lines []string) []string {
+	f, err := os.Open(filePath)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	rd := bufio.NewReader(f)
+
+	for {
+
+		l, err := rd.ReadString('\n')
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+
+			panic(err)
+		}
+
+		if len(l) > 0 {
+			removeLineBreak(&l)
+			lines = append(lines, l)
+		}
+
+	}
+	return lines
+}
+
 func doing(filePath string) {
 	f, err := os.Open(filePath)
 	if err != nil {
@@ -254,22 +286,95 @@ func doing(filePath string) {
 		}
 		if len(l) > 0 {
 			removeLineBreak(&l)
-			insertData(`D:\systemp\t000\2.txt`, l)
+			insertData(`D:\xxxx\x.txt`, l)
 		}
 	}
 }
 
+func InsertSort(values []string) {
+	length := len(values)
+	if length <= 1 {
+		return
+	}
+
+	for i := 1; i < length; i++ {
+		tmp := values[i] // 从第二个数开始，从左向右依次取数
+		key := i - 1     // 下标从0开始，依次从左向右
+
+		// 每次取到的数都跟左侧的数做比较，如果左侧的数比取的数大，就将左侧的数右移一位，直至左侧没有数字比取的数大为止
+		for key >= 0 && (CompareStr(tmp, values[key]) < 0) {
+			values[key+1] = values[key]
+			key--
+			//fmt.Println(values)
+		}
+
+		// 将取到的数插入到不小于左侧数的位置
+		if key+1 != i {
+			values[key+1] = tmp
+		}
+		//fmt.Println(values)
+	}
+}
+
+func Rm_Duplicate(list []string) []string {
+	var x []string = []string{}
+	for _, i := range list {
+		if len(x) == 0 {
+			x = append(x, i)
+		} else {
+			for k, v := range x {
+				if i == v {
+					break
+				}
+				if k == len(x)-1 {
+					x = append(x, i)
+				}
+			}
+		}
+	}
+	return x
+}
+
+
+type SubList []string
+func (p SubList) Len() int{
+	 return len(p) 
+}
+func (p SubList) Swap(i, j int){
+	 p[i], p[j] = p[j], p[i] 
+}
+
+func (p SubList) Less(i, j int) bool {
+	 return CompareStr(p[i] , p[j]) > 0 
+}
+
 func main() {
 	xfiles, _ := GetAllFiles(`D:\xxx`)
+	var lines SubList
+
 	for _, file := range xfiles {
 		fmt.Printf("获取的文件为[%s]\n", file)
-		doing(file)
+		//doing(file)
+		
+		lines = readFileAllLine(file, lines)
+		fmt.Printf("InsertSort before len[%d]\n", len(lines))
+		//InsertSort(lines)
+		//lines = Rm_Duplicate(lines)
+		fmt.Printf("Sort before len[%d]\n", len(lines))
+		if false{
+			//sort.Sort(lines)
+			sort.Stable(lines)
+		}
+		fmt.Printf("lines len[%d]\n", len(lines))
 	}
+
 	/*
-	lines := readFileLine(`D:\xxxxx\1.txt`, 2, 5)
-	for _, l := range lines {
-		fmt.Printf("line[%s]\n", l)
-	}
+		lines := readFileLine(`D:\xxxx.txt`, 2, 5)
+		for _, l := range lines {
+			fmt.Printf("line[%s]\n", l)
+		}
 	*/
 
 }
+
+
