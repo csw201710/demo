@@ -1,0 +1,122 @@
+<html>
+<head>
+</head>
+<script>
+ 
+</script>
+
+<style type="text/css">
+
+body {margin:0; padding:0;} 
+
+.red{
+	background-color: red;
+	border-radius: 100px;
+}
+.blue{
+	background-color: blue;
+	border-radius: 100px;
+}
+.container{
+	display:inline-block;width: 100%;position: relative;
+	margin:5px;
+	border-radius: 100px;
+	margin:0; padding:0;
+}
+.progress{
+	-webkit-transition: all .2s linear;
+	transition: all .2s linear;
+	border-radius: 100px;
+}
+
+
+.ivu-progress {
+	 display:inline-block;
+	 width:100%;
+	 font-size:12px;
+	 position:relative
+}
+
+.ivu-progress-show-info .ivu-progress-outer {
+	padding-right:55px;
+	margin-right:-55px
+}
+
+.ivu-progress-outer {
+	display:inline-block;
+	width:100%;
+	margin-right:0;
+	padding-right:0
+}
+.ivu-progress-bg {
+	 border-radius:100px;
+	 background-color:#2d8cf0;
+	 -webkit-transition:all .2s linear;
+	 transition:all .2s linear;
+	 position:relative
+}
+.ivu-progress-success-bg {
+	 border-radius:100px;
+	 background-color:#19be6b;
+	 -webkit-transition:all .2s linear;
+	 transition:all .2s linear;
+	 position:absolute;
+	 top:0;
+	 left:0
+}
+.ivu-progress-inner {
+	 display:inline-block;
+	 width:100%;
+	 background-color:#f3f3f3;
+	 border-radius:100px;
+	 vertical-align:middle;
+	 position:relative
+}
+.ivu-progress-outer {
+	 display:inline-block;
+	 width:100%;
+	 margin-right:0;
+	 padding-right:0;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+}
+<!--
+添加box-sizing 为 border-box 显示元素总大小(包括内容大小+padding+margin)，便于排版
+box-sizing 属性可以被用来调整这些表现:
+    content-box  是默认值。如果你设置一个元素的宽为100px，那么这个元素的内容区会有100px 宽，并且任何边框和内边距的宽度都会被增加到最后绘制出来的元素宽度中。
+    border-box 告诉浏览器：你想要设置的边框和内边距的值是包含在width内的。也就是说，如果你将一个元素的width设为100px，那么这100px会包含它的border和padding，内容区的实际宽度是width减去(border + padding)的值。大多数情况下，这使得我们更容易地设定一个元素的宽高。
+
+-->
+.ivu-progress-text {
+	 display:inline-block;
+	 margin-left:5px;
+	 text-align:left;
+	 font-size:1em;
+	 vertical-align:middle
+}
+
+</style>
+	
+<body>
+	<div class="ivu-progress  ivu-progress-show-info">
+		<div class="ivu-progress-outer">
+			<div class="ivu-progress-inner">
+				<div class="ivu-progress-bg" style="width: 20%; height: 10px;"></div>
+				<div class="ivu-progress-success-bg" style="width: 0%; height: 10px;"></div>
+			</div>
+		</div> 
+		<span class="ivu-progress-text">
+			<span class="">20%</span>
+		</span>
+	</div>
+	
+	<div class="container">
+		<div class="red" style="height: 10px;"></div>
+		<div class="blue" style="width: 10%;height: 10px;position: absolute;top:0;left:0;"></div>
+	</div>
+	
+</body>
+
+</html>
+
+
