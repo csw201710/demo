@@ -1,0 +1,19 @@
+cinatra是一个高性能易用的http框架，它是用modern c++(c++17)开发的，它的目标是提供一个快速开发的c++ http框架。它的主要特点如下：
+    统一而简单的接口
+    header-only
+    跨平台
+    高效
+支持面向切面编程
+
+	源码地址：https://github.com/qicosmos/cinatra
+
+	
+cinatra 编译条件:
+	1. gcc 7.2
+	2. asio
+	3. 编译参数
+		g++   -DASIO_STANDALONE -pthread -std=c++17   -o main.cpp.o -c main.cpp
+		g++     -pthread -std=c++17   main.cpp.o  -o cinatra_example -rdynamic -luuid -lstdc++fs
+	或者
+		g++   -DASIO_STANDALONE -pthread -std=c++17  main.cpp  -o main  -rdynamic -luuid -lstdc++fs 
+
