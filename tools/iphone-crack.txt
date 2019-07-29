@@ -1,0 +1,16 @@
+i-m-a-z-ing:
+DDNAToolKitNET_dll（0000626D: 17 03）
+                       .method public hidebysig instance void appRegistered(bool value)
+                       {
+                         .maxstack 8
+02                       ldarg.0
+7B 87 00 00 04           ldfld    valuetype [mscorlib]System.Runtime.InteropServices.HandleRef DDNA.Config::swigCPtr
+17                       ldc.i4.1   //关键位置 maybe
+28 19 19 00 06           call     void DDNA.DDNAToolKitPINVOKE::Config_appRegistered__SWIG_1(valuetype [mscorlib]System.Runtime.InteropServices.HandleRef jarg1, bool jarg2)
+02                       ldarg.0
+28 94 01 00 0A           call     class [mscorlib]System.Reflection.MethodBase [mscorlib]System.Reflection.MethodBase::GetCurrentMethod()
+6F EC 00 00 0A           callvirt instance string [mscorlib]System.Reflection.MemberInfo::get_Name()
+28 FB 02 00 06           call     instance void DDNA.Config::_NotifyPropertyChanged(string name)
+2A                       ret
+                       }
+
