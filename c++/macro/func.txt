@@ -1,0 +1,13 @@
+#define DECLARE_MULTI_PARAM(...) __VA_ARGS__
+	
+#define DECLARE_MULTI_FUC(a,b,c, d, e)\
+	a DEVAPI b (d){\
+		if(c){\
+				return c(e);\
+			}\
+		return -1;\
+	}
+
+DECLARE_MULTI_FUC(ULONG, Multi_A, os_key.pA, DECLARE_MULTI_PARAM(int a,int b), DECLARE_MULTI_PARAM(a,b))
+DECLARE_MULTI_FUC(ULONG, Multi_B, os_key.pB, DECLARE_MULTI_PARAM(char *a,int b,float c), DECLARE_MULTI_PARAM(a,b,c))
+
