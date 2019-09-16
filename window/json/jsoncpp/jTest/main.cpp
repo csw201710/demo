@@ -1,12 +1,26 @@
 #include "json/json.h"
 #include <iostream>
 
+using namespace std;
+
+std::string toStr(Json::Value &root) {
+	Json::StreamWriterBuilder jsrocd;
+	std::stringstream  ss;
+
+	jsrocd.settings_["indentation"] = "";
+	std::unique_ptr<Json::StreamWriter> write(jsrocd.newStreamWriter());
+	write->write(root, &ss);
+
+	return ss.str();
+}
+
 void readJson() {
 	using namespace std;
 	std::string strValue = "{\"name\":\"json\",\"array\":[{\"cpp\":\"jsoncpp\"},{\"java\":\"jsoninjava\"},{\"php\":\"support\"}]}";
 
 	Json::Reader reader;
 	Json::Value value;
+	
 
 	if (reader.parse(strValue, value))
 	{
@@ -18,6 +32,7 @@ void readJson() {
 			if (!arrayObj[i].isMember("cpp"))
 				continue;
 			out = arrayObj[i]["cpp"].asString();
+			
 			std::cout << out;
 			if (i != (arrayObj.size() - 1))
 				std::cout << std::endl;
@@ -26,9 +41,12 @@ void readJson() {
 }
 
 void writeJson() {
-	using namespace std;
+
+
+	
 
 	Json::Value root;
+	Json::Value root2;
 	Json::Value arrayObj;
 	Json::Value item;
 
@@ -36,13 +54,23 @@ void writeJson() {
 	item["java"] = "jsoninjava";
 	item["php"] = "support";
 	arrayObj.append(item);
+	
+	
 
 	root["name"] = "json";
 	root["array"] = arrayObj;
 
 	root.toStyledString();
 	std::string out = root.toStyledString();
-	std::cout << out << std::endl;
+	
+
+	
+	std::cout  << std::endl;
+
+	const char * p = toStr(root2).c_str();
+	printf("%x\n", strlen(p));
+	std::cout << toStr(root2).c_str() << std::endl;
+	std::cout << std::endl;
 }
 
 int main(){
@@ -51,3 +79,4 @@ int main(){
 	writeJson();
 	return 0;
 }
+
