@@ -1,0 +1,24 @@
+extmail 安装后：
+	这里需要修改webman.cf配置文件取消验证码认证登录
+
+	绝对路径  /var/www/extsuite/extman/webman.cf
+
+	SYS_CAPTCHA_ON = 0
+
+	root@extmail.org
+
+
+	GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'extmail' WITH GRANT OPTION;
+	flush privileges;
+
+
+	ExtMan的默认超级管理员帐户： root@extmail.org，初始密码： extmail
+
+	tail -f /var/log/maillog
+
+
+	mysqld
+	GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'extmail' WITH GRANT OPTION;
+	FLUSH PRIVILEGES;
+	
+
