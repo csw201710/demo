@@ -1,0 +1,121 @@
+/*
+ * This is the ASN1 template structure that defines a wrapper round the
+ * actual type. It determines the actual position of the field in the value
+ * structure, various flags such as OPTIONAL and the field name.
+ */
+struct ASN1_TEMPLATE_st {
+    unsigned long flags;        /* Various flags */
+    long tag;                   /* tag, not used if no tagging */
+    unsigned long offset;       /* Offset of this field in structure */  //该TEMPLATE在被描述结构体的偏移
+    const char *field_name;     /* Field name */                    
+    ASN1_ITEM_EXP *item;        /* Relevant ASN1_ITEM or ASN1_ADB */  //每个TEMPLATE由一个ASN1_ITEM描述，此字段指向该ITEM
+};
+typedef ASN1_TEMPLATE_st ASN1_TEMPLATE;
+
+/* This is the actual ASN1 item itself */
+
+struct ASN1_ITEM_st {
+    char itype;                 /* The item type, primitive, SEQUENCE, CHOICE
+                                 * or extern */
+    long utype;                 /* underlying type */
+    const ASN1_TEMPLATE *templates; /* If SEQUENCE or CHOICE this contains
+                                     * the contents */
+    long tcount;                /* Number of templates if SEQUENCE or CHOICE */
+    const void *funcs;          /* functions that handle this type */
+    long size;                  /* Structure size (usually) */
+    const char *sname;          /* Structure name */
+};
+
+
+
+ASN1_ADB_TEMPLATE(p7default) = ASN1_EXP_OPT(PKCS7, d.other, ASN1_ANY, 0);
+	# define ASN1_EXP_OPT(stname, field, type, tag) ASN1_EXP_EX(stname, field, type, tag, ASN1_TFLG_OPTIONAL)
+	# define ASN1_EXP_EX(stname, field, type, tag, ex) \
+                ASN1_EX_TYPE(ASN1_TFLG_EXPLICIT | ex, tag, stname, field, type)
+	# define ASN1_EX_TYPE(flags, tag, stname, field, type) { \
+			(flags), (tag), offsetof(stname, field),\
+			#field, ASN1_ITEM_ref(type) }
+
+				
+				
+	static const ASN1_TEMPLATE p7default_tt = {ASN1_TFLG_EXPLICIT | ASN1_TFLG_OPTIONAL, 0, offsetof(PKCS7, d.other), "d.other", ASN1_ITEM_ref(ASN1_ANY)  }
+	
+	
+	
+	
+struct ASN1_ADB_TABLE_st {
+    long value;                 /* NID for an object or value for an int */
+    const ASN1_TEMPLATE tt;     /* item for this value */
+};	
+typedef struct ASN1_ADB_TABLE_st ASN1_ADB_TABLE;
+
+
+typedef struct ASN1_ADB_st ASN1_ADB;
+
+struct ASN1_ADB_st {
+    unsigned long flags;        /* Various flags */
+    unsigned long offset;       /* Offset of selector field */
+    int (*adb_cb)(long *psel);  /* Application callback */
+    const ASN1_ADB_TABLE *tbl;  /* Table of possible types */
+    long tblcount;              /* Number of entries in tbl */
+    const ASN1_TEMPLATE *default_tt; /* Type to use if no match */
+    const ASN1_TEMPLATE *null_tt; /* Type to use if selector is NULL */
+};
+
+static const ASN1_ADB_TABLE PKCS7_adbtbl[] = {
+	{NID_pkcs7_data, { (ASN1_TFLG_EXPLICIT | ASN1_TFLG_OPTIONAL | ASN1_TFLG_NDEF ), (0), offsetof(PKCS7, d.data), "d.data", ASN1_ITEM_ref(ASN1_OCTET_STRING_NDEF) }}
+	
+};
+static const ASN1_ADB PKCS7_adb = {
+	0,\
+	offsetof(PKCS7, type),\
+	0,\
+	PKCS7_adbtbl,\
+	sizeof(PKCS7_adbtbl) / sizeof(ASN1_ADB_TABLE),\
+	&p7default_tt,\
+	0\
+}
+		
+		
+
+ASN1_ADB(PKCS7) = {
+        ADB_ENTRY(NID_pkcs7_data, ASN1_NDEF_EXP_OPT(PKCS7, d.data, ASN1_OCTET_STRING_NDEF, 0)),
+        ADB_ENTRY(NID_pkcs7_signed, ASN1_NDEF_EXP_OPT(PKCS7, d.sign, PKCS7_SIGNED, 0)),
+        ADB_ENTRY(NID_pkcs7_enveloped, ASN1_NDEF_EXP_OPT(PKCS7, d.enveloped, PKCS7_ENVELOPE, 0)),
+        ADB_ENTRY(NID_pkcs7_signedAndEnveloped, ASN1_NDEF_EXP_OPT(PKCS7, d.signed_and_enveloped, PKCS7_SIGN_ENVELOPE, 0)),
+        ADB_ENTRY(NID_pkcs7_digest, ASN1_NDEF_EXP_OPT(PKCS7, d.digest, PKCS7_DIGEST, 0)),
+        ADB_ENTRY(NID_pkcs7_encrypted, ASN1_NDEF_EXP_OPT(PKCS7, d.encrypted, PKCS7_ENCRYPT, 0))
+} ASN1_ADB_END(PKCS7, 0, type, 0, &p7default_tt, NULL);
+
+
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+
