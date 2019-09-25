@@ -1,0 +1,603 @@
+//-------------------------------------------------------------------------//
+
+helloworld:
+	#!/usr/bin/perl 
+	print "Hello, World!\n";
+
+	
+文件名:
+	文件名可以包含数字，符号和字母，但不能包含空格，可以使用下划线（_）来替代空格。
+	
+注释:
+		#!/usr/bin/perl
+		 
+		# 这是一个单行注释
+		print "Hello, world\n";
+		 
+		=pod 注释
+		这是一个多行注释
+		这是一个多行注释
+		这是一个多行注释
+		这是一个多行注释
+		=cut
+	
+	多行注释:
+		=pod、 =cut只能在行首。
+		以=开头，以=cut结尾。 
+		=后面要紧接一个字符，=cut后面可以不用。 
+
+	
+Perl 中的空白:
+	所有类型的空白如：空格，tab ，空行等如果在引号外解释器会忽略它，如果在引号内会原样输出。
+
+
+字符串：
+	perl 输出字符串可以使用单引号和双引号
+	Perl 双引号和单引号的区别: 双引号可以正常解析一些转义字符与变量，而单引号无法解析会原样输出。
+
+多行字符串:
+	# 会输出分行
+	print "Hello
+          world\n";
+
+Here 文档
+	1.必须后接分号，否则编译通不过。
+	2.END可以用任意其它字符代替，只需保证结束标识与开始标识一致。
+	3.结束标识必须顶格独自占一行(即必须从行首开始，前后不能衔接任何空白和字符)。
+	4.开始标识可以不带引号号或带单双引号，不带引号与带双引号效果一致，解释内嵌的变量和转义符号，带单引号则不解释内嵌的变量和转义符号。
+	5.当内容需要内嵌引号（单引号或双引号）时，不需要加转义符，本身对单双引号转义，此处相当与q和qq的用法。
+
+			#!/usr/bin/perl
+			 
+			$a = 10;
+
+			$var = <<"EOF";
+			这是一个 Here 文档实例，使用双引号。
+			可以在这输如字符串和变量。
+			例如：a = $a
+			EOF
+			print "$var\n";
+			 
+			$var = <<'EOF';
+			这是一个 Here 文档实例，使用单引号。
+			例如：a = $a
+			EOF
+			print "$var\n";
+
+			$var = <<EOF;
+			这是一个 Here 文档实例，没有引号。
+			例如：a = $a
+			EOF
+			print "$var\n";
+
+		执行以上程序输出结果为：
+
+			这是一个 Here 文档实例，使用双引号。
+			可以在这输如字符串和变量。
+			例如：a = 10
+
+			这是一个 Here 文档实例，使用单引号。
+			例如：a = $a
+
+			这是一个 Here 文档实例，没有引号。
+			例如：a = 10
+
+
+转义字符
+	如果我们需要输出一个特殊的字符，可以使用反斜线（\）来转义，例如输出美元符号($):
+	
+	
+Perl 标识符 	
+	标识符组成单元：英文字母（a~z，A~Z），数字（0~9）和下划线（_）。
+	标识符由英文字母或下划线开头。
+	标识符区分大小写，$runoob 与 $Runoob 表示两个不同变量。
+
+Perl 数据类型
+	Perl 是一种弱类型语言，所以变量不需要指定类型，Perl 解释器会根据上下文自动选择匹配类型。
+	Perl 有三个基本的数据类型：标量、数组、哈希。以下是这三种数据类型的说明：
+	
+	标量
+		标量是 Perl 语言中最简单的一种数据类型。这种数据类型的变量可以是数字，字符串，浮点数，不作严格的区分。在使用时在变量的名字前面加上一个 $，表示是标量。例如：
+			$myfirst=123;　    #数字123　
+			$mysecond="123";   #字符串123　
+	
+ 	数组
+		数组变量以字符 @ 开头，索引从 0 开始，如：@arr=(1,2,3)
+			@arr=(1,2,3)
+
+	哈希
+		哈希是一个无序的 key/value 对集合。可以使用键作为下标获取值。哈希变量以字符 % 开头。
+			%h=('a'=>1,'b'=>2);
+
+			
+数字字面量		
+	Perl 实际上把整数存在你的计算机中的浮点寄存器中，所以实际上被当作浮点数看待。 
+	
+浮点数
+	浮点数数据如：11.4 、 -0.3 、.3 、 3. 、 54.1e+02 、 5.41e03。	
+
+Perl 变量
+	标量 $ 开始， 如$a $b 是两个标量。
+	数组 @ 开始 ， 如 @a @b 是两个数组。
+	哈希 % 开始 ， %a %b 是两个哈希。 
+	
+	创建变量
+		变量不需要显式声明类型，在变量赋值后，解释器会自动分配匹配的类型空间。
+		我们可以在程序中使用 use strict 语句让所有变量需要强制声明类型。
+		
+	标量变量
+		标量是一个单一的数据单元。 数据可以是整数，浮点数，字符，字符串，段落等。
+	
+	数组变量
+		数组是用于存储一个有序的标量值的变量。
+		要访问数组的变量，可以使用美元符号($)+变量名，并指定下标来访问
+
+			#!/usr/bin/perl
+			 
+			@ages = (25, 30, 40);             
+			@names = ("google", "runoob", "taobao");
+			 
+			print "\$ages[0] = $ages[0]\n";
+			print "\$ages[1] = $ages[1]\n";
+			print "\$ages[2] = $ages[2]\n";
+			print "\$names[0] = $names[0]\n";
+			print "\$names[1] = $names[1]\n";
+			print "\$names[2] = $names[2]\n";
+
+	哈希变量
+		哈希是一个 key/value 对的集合。
+		如果要访问哈希值，可以使用 $ + {key} 格式来访问：
+	
+			#!/usr/bin/perl
+			 
+			%data = ('google', 45, 'runoob', 30, 'taobao', 40);
+			 
+			print "\$data{'google'} = $data{'google'}\n";
+			print "\$data{'runoob'} = $data{'runoob'}\n";
+			print "\$data{'taobao'} = $data{'taobao'}\n";
+
+	变量上下文
+		所谓上下文：指的是表达式所在的位置。
+		上下文是由等号左边的变量类型决定的，等号左边是标量，则是标量上下文，等号左边是列表，则是列表上下文。
+
+			#!/usr/bin/perl
+			 
+			@names = ('google', 'runoob', 'taobao');
+			 
+			@copy = @names;   # 复制数组
+			$size = @names;   # 数组赋值给标量，返回数组元素个数
+			 
+			print "名字为 : @copy\n";
+			print "名字数为 : $size\n";
+
+			
+		1 	标量 −
+			赋值给一个标量变量，在标量上下文的右侧计算
+		2 	列表 −
+			赋值给一个数组或哈希，在列表上下文的右侧计算。
+		3 	布尔 −
+			布尔上下文是一个简单的表达式计算，查看是否为 true 或 false。
+		4 	Void −
+			这种上下文不需要关系返回什么值，一般不需要返回值。
+		5 	插值 −
+			这种上下文只发生在引号内。
+	
+Perl 标量
+	数字标量
+	字符串标量
+	变量运算
+
+		#!/usr/bin/perl
+		 
+		$str = "hello" . "world";       # 字符串连接
+		$num = 5 + 10;                  # 两数相加
+		$mul = 4 * 5;                   # 两数相乘
+		$mix = $str . $num;             # 连接字符串和数字
+		 
+		print "str = $str\n";
+		print "num = $num\n";
+		print "mix = $mix\n";
+
+	特殊字符
+		以下我们将演示 Perl 中特殊字符的应用，如 __FILE__, __LINE__, 和 __PACKAGE__ 分别表示当前执行脚本的文件名，行号，包名。 
+	
+	v 字符串
+		一个以 v 开头,后面跟着一个或多个用句点分隔的整数,会被当作一个字串文本。
+		当你想为每个字符 直接声明其数字值时,v-字串提供了一种更清晰的构造这类字串的方法，
+		
+
+Perl 数组
+	Perl 数组一个是存储标量值的列表变量，变量可以是不同类型。
+	数组变量以 @ 开头。访问数组元素使用 $ + 变量名称 + [索引值] 格式来读取，		
+	
+	创建数组
+		数组变量以 @ 符号开始，元素放在括号内，也可以以 qw 开始定义数组。
+			@array = (1, 2, 'Hello');
+			@array = qw/这是 一个 数组/;
+			@days = qw/google
+			taobao
+			...
+			runoob/;
+		
+		你也可以按索引来给数组赋值		
+			$array[0] = 'Monday';
+			...
+			$array[6] = 'Sunday';	
+			
+	访问数组元素
+		访问数组元素使用 $ + 变量名称 + [索引值] 格式来读取		
+			数组索引值从 0 开始，即 0 为第一个元素，1 为第二个元素，以此类推。
+			负数从反向开始读取，-1 为第一个元素， -2 为第二个元素 	
+	
+	数组序列号
+		Perl 提供了可以按序列输出的数组形式，格式为 起始值 + .. + 结束值
+			#!/usr/bin/perl
+			 
+			@var_10 = (1..10);
+			@var_20 = (10..20);
+			@var_abc = (a..z);
+			 
+			print "@var_10\n";   # 输出 1 到 10
+			print "@var_20\n";   # 输出 10 到 20
+			print "@var_abc\n";  # 输出 a 到 z
+
+	数组大小
+		数组大小由数组中的标量上下文决定。
+			@array = (1,2,3);
+			print "数组大小: ",标量 @array,"\n";
+		
+		数组长度返回的是数组物理大小，而不是元素的个数
+	
+			#!/uer/bin/perl
+			 
+			@array = (1,2,3);
+			$array[50] = 4;
+			 
+			$size = @array;
+			$max_index = $#array;
+			 
+			print "数组大小:  $size\n";
+			print "最大索引: $max_index\n";
+		执行以上程序，输出结果为：
+			数组大小:  51
+			最大索引: 50
+
+	添加和删除数组元素
+		1 	push @ARRAY, LIST
+			将列表的值放到数组的末尾
+		2 	pop @ARRAY
+			弹出数组最后一个值，并返回它
+		3 	shift @ARRAY
+			弹出数组第一个值，并返回它。数组的索引值也依次减一。
+		4 	unshift @ARRAY, LIST
+			将列表放在数组前面，并返回新数组的元素个数。
+
+				#!/usr/bin/perl
+				 
+				# 创建一个简单是数组
+				@sites = ("google","runoob","taobao");
+				print "1. \@sites  = @sites\n";
+				 
+				# 在数组结尾添加一个元素
+				push(@sites, "baidu");
+				print "2. \@sites  = @sites\n";
+				 
+				# 在数组开头添加一个元素
+				unshift(@sites, "weibo");
+				print "3. \@sites  = @sites\n";
+				 
+				# 删除数组末尾的元素
+				pop(@sites);
+				print "4. \@sites  = @sites\n";
+				 
+				# 移除数组开头的元素
+				shift(@sites);
+				print "5. \@sites  = @sites\n";
+	切割数组
+		我们可以切割一个数组，并返回切割后的新数组：
+			#!/usr/bin/perl
+			@sites = qw/google taobao runoob weibo qq facebook 网易/;
+			@sites2 = @sites[3,4,5];	 
+			print "@sites2\n";
+
+		数组索引需要指定有效的索引值，可以是正数后负数，每个索引值使用逗号隔开。
+		如果是连续的索引，可以使用 .. 来表示指定范围：
+			#!/usr/bin/perl
+			@sites = qw/google taobao runoob weibo qq facebook 网易/;
+			@sites2 = @sites[3..5];
+			print "@sites2\n";
+	
+	替换数组元素
+		Perl 中数组元素替换使用 splice() 函数，语法格式如下：
+			splice @ARRAY, OFFSET [ , LENGTH [ , LIST ] ]
+		参数说明：
+			@ARRAY：要替换的数组。
+			OFFSET：起始位置。
+			LENGTH：替换的元素个数。
+			LIST：替换元素列表。
+
+	将字符串转换为数组
+		Perl 中将字符串转换为数组使用 split() 函数，语法格式如下：
+			split [ PATTERN [ , EXPR [ , LIMIT ] ] ]
+		参数说明：
+			PATTERN：分隔符，默认为空格。
+			EXPR：指定字符串数。
+			LIMIT：如果指定该参数，则返回该数组的元素个数。
+
+	将数组转换为字符串
+		Perl 中将数组转换为字符串使用 join() 函数，语法格式如下：
+			join EXPR, LIST
+		参数说明：
+			EXPR：连接符。
+			LIST：列表或数组。
+
+	数组排序
+		Perl 中数组排序使用 sort() 函数，语法格式如下：
+			sort [ SUBROUTINE ] LIST
+		参数说明：
+			SUBROUTINE：指定规则。
+			LIST：列表或数组。
+		注意：数组排序是根据 ASCII 数字值来排序。所以我们在对数组进行排序时最好先将每个元素转换为小写后再排序。
+		
+	特殊变量： $[
+		特殊变量 $[ 表示数组的第一索引值，一般都为 0 ，如果我们将 $[ 设置为 1，则数组的第一个索引值即为 1，第二个为 2，以此类推。
+		
+	合并数组
+		数组的元素是以逗号来分割，我们也可以使用逗号来合并数组
+			#!/usr/bin/perl
+			@numbers = (1,3,(4,5,6));
+			print "numbers = @numbers\n";
+			@odd = (1,3,5);
+			@even = (2, 4, 6);
+			@numbers = (@odd, @even);
+			print "numbers = @numbers\n";
+	
+	从列表中选择元素
+		一个列表可以当作一个数组使用，在列表后指定索引值可以读取指定的元素
+			#!/usr/bin/perl
+			$var = (5,4,3,2,1)[4];
+			print "var 的值为 = $var\n"
+	
+Perl 哈希
+	创建哈希
+		每个 key 设置 value
+			$data{'google'} = 'google.com';
+			$data{'runoob'} = 'runoob.com';
+			$data{'taobao'} = 'taobao.com';
+
+		通过列表设置
+
+			列表中第一个元素为 key，第二个为 value。
+				%data = ('google', 'google.com', 'runoob', 'runoob.com', 'taobao', 'taobao.com');
+
+			也可以使用 => 符号来设置 key/value:
+				%data = ('google'=>'google.com', 'runoob'=>'runoob.com', 'taobao'=>'taobao.com');
+
+			以下实例是上面实例的变种，使用 - 来代替引号：
+				%data = (-google=>'google.com', -runoob=>'runoob.com', -taobao=>'taobao.com');
+
+			使用这种方式 key 不能出现空格，读取元素方式为：
+				$val = $data{-google}
+				$val = $data{-runoob}
+
+		访问哈希元素
+			访问哈希元素格式：${key}，
+			
+		读取哈希的 key 和 value
+			keys %HASH
+			values %HASH
+
+		检测元素是否存在
+			如果你在哈希中读取不存在的 key/value 对 ，会返回 undefined 值，且在执行时会有警告提醒。
+			为了避免这种情况，我们可以使用 exists 函数来判断key是否存在
+				#!/usr/bin/perl
+				%data = ('google'=>'google.com', 'runoob'=>'runoob.com', 'taobao'=>'taobao.com'); 
+				if( exists($data{'facebook'} ) ){
+				   print "facebook 的网址为 $data{'facebook'} \n";
+				}
+				else
+				{
+				   print "facebook 键不存在\n";
+				}
+		
+		获取哈希大小
+			哈希大小为元素的个数，我们可以通过先获取 key 或 value 的所有元素数组，再计算数组元素多少来获取哈希的大小
+				#!/usr/bin/perl
+				 
+				%data = ('google'=>'google.com', 'runoob'=>'runoob.com', 'taobao'=>'taobao.com');
+				 
+				@keys = keys %data;
+				$size = @keys;
+				print "1 - 哈希大小: $size\n";
+				 
+				@values = values %data;
+				$size = @values;
+				print "2 - 哈希大小: $size\n";
+
+		哈希中添加或删除元素
+			添加 key/value 对可以通过简单的赋值来完成。但是删除哈希元素你需要使用 delete 函数
+				#!/usr/bin/perl
+				 
+				%data = ('google'=>'google.com', 'runoob'=>'runoob.com', 'taobao'=>'taobao.com');
+				@keys = keys %data;
+				$size = @keys;
+				print "1 - 哈希大小: $size\n";
+				 
+				# 添加元素
+				$data{'facebook'} = 'facebook.com';
+				@keys = keys %data;
+				$size = @keys;
+				print "2 - 哈希大小: $size\n";
+				 
+				# 删除哈希中的元素
+				delete $data{'taobao'};
+				@keys = keys %data;
+				$size = @keys;
+				print "3 - 哈希大小: $size\n";
+	
+Perl 条件语句
+	 IF 语句
+		if(boolean_expression 1){
+		   # 在布尔表达式 boolean_expression 1 为 true 执行
+		}
+		elsif( boolean_expression 2){
+		   # 在布尔表达式 boolean_expression 2 为 true 执行
+		}
+		elsif( boolean_expression 3){
+		   # 在布尔表达式 boolean_expression 3 为 true 执行
+		}
+		else{
+		   # 布尔表达式的条件都为 false 时执行
+		}
+	
+	UNLESS 语句
+		unless(boolean_expression){
+		   # 在布尔表达式 boolean_expression 为 false 执行
+		}else{
+		   # 在布尔表达式 boolean_expression 为 true 执行
+		}
+
+	switch 语句
+		use Switch;
+		 
+		switch(argument){
+		   case 1            { print "数字 1" }
+		   case "a"          { print "字符串 a" }
+		   case [1..10,42]   { print "数字在列表中" }
+		   case (\@array)    { print "数字在数组中" }
+		   case /\w+/        { print "正则匹配模式" }
+		   case qr/\w+/      { print "正则匹配模式" }
+		   case (\%hash)     { print "哈希" }
+		   case (\&sub)      { print "子进程" }
+		   else              { print "不匹配之前的条件" }
+		}
+
+三元运算符 ? :
+	Exp1 ? Exp2 : Exp3;
+	如果 Exp1 表达式为 true ，则返回 Exp2 表达式计算结果，否则返回 Exp3。
+
+
+Perl 循环
+	while 循环
+		while 语句在给定条件为 true 时，重复执行语句或语句组。循环主体执行之前会先测试条件。
+			while(condition)
+			{
+			   statement(s);
+			}
+
+	until 循环
+		until 语句在给定条件为 false 时，重复执行语句或语句组
+			until(condition)
+			{
+			   statement(s);
+			}
+	
+	for 循环
+			for ( init; condition; increment ){
+			   statement(s);
+			}
+				
+	Perl 循环
+		Perl foreach 循环用于迭代一个列表或集合变量的值。	
+			foreach var (list) {
+			...
+			}	
+
+	do...while 循环
+			do
+			{
+			   statement(s);
+			}while( condition );
+
+	循环嵌套
+			for ( init; condition; increment ){
+			   for ( init; condition; increment ){
+				  statement(s);
+			   }
+			   statement(s);
+			}
+
+循环控制语句
+	next 语句
+		停止执行从next语句的下一语句开始到循环体结束标识符之间的语句，转去执行continue语句块，然后再返回到循环体的起始处开始执行下一次循环。
+
+	last 语句
+		退出循环语句块，从而结束循环
+
+	continue 语句
+		continue 语句块通常在条件语句再次判断前执行。
+			#/usr/bin/perl
+			   
+			$a = 0;
+			while($a < 3){
+			   print "a = $a\n";
+			}continue{
+			   $a = $a + 1;
+			}
+			
+			#/usr/bin/perl
+			   
+			@list = (1, 2, 3, 4, 5);
+			foreach $a (@list){
+			   print "a = $a\n";
+			}continue{
+			   last if $a == 4;
+			}
+
+
+		
+	redo 语句
+		redo 语句直接转到循环体的第一行开始重复执行本次循环，redo语句之后的语句不再执行，continue语句块也不再执行；
+
+	goto 语句
+		Perl 有三种 goto 形式：got LABLE，goto EXPR，和 goto &NAME。
+
+
+
+
+		
+		
+函数:
+	定义语法:
+		sub subroutine{
+		   statements;
+		}
+		Perl 子程序即执行一个特殊任务的一段分离的代码，它可以使减少重复代码且使程序易读。
+		
+	向子程序传递参数
+		Perl 子程序可以和其他编程一样接受多个参数，子程序参数使用特殊数组 @_ 标明。
+		
+	
+	
+	
+Perl的正则表达式的三种形式，分别是匹配，替换和转化:
+    匹配：m//（还可以简写为//，略去m）
+    替换：s///
+    转化：tr///
+	
+	这三种形式一般都和 =~ 或 !~ 搭配使用， =~ 表示相匹配，!~ 表示不匹配。
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+Perl 特殊变量	
+	print 在不指定输出变量，默认情况下使用的也是 $_。
+
+	以下是几处即使没有写明 Perl 也会假定使用 $_ 的地方：
+
+		各种单目函数，包括像 ord() 和 int() 这样的函数以及除 "-t"以外所有的文件 测试操作 ("-f"，"-d")，"-t" 默认操作 STDIN。
+		各种列表函数，例如 print() 和 unlink()。
+		没有使用 "=~" 运算符时的模式匹配操作 "m//"、"s///" 和"tr///"。
+		在没有给出其他变量时是 "foreach" 循环的默认迭代变量。
+		grep() 和 map() 函数的隐含迭代变量。
+		当 "while" 仅有唯一条件，且该条件是对 ""操作的结果进行测试时，$_ 就是存放输入记录的默认位置。除了"while" 测试条件之外不会发生这种情况。(助记：下划线在特定操作中是可以省略的。)
+
+	
+	
+
