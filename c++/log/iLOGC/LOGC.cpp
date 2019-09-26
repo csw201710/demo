@@ -81,9 +81,6 @@ namespace LOG {
 	/* 输出日志 */
 	static int WriteLogBase(int log_level,const char *c_filename, long c_fileline,const char *format, va_list valist)
 	{
-		char		c_filename_copy[MAXLEN_FILENAME + 1];
-		char		*p_c_filename = NULL;
-
 		struct timeval	tv;
 		struct tm	stime;
 
@@ -92,7 +89,11 @@ namespace LOG {
 		size_t		log_buflen;
 		size_t		log_buf_remain_len;
 		size_t		len;
-
+  const char		*p_c_filename = NULL;
+  
+#ifdef _WIN32
+		char		c_filename_copy[MAXLEN_FILENAME + 1];
+		
 		/* 处理源代码文件名 */
 		memset(c_filename_copy, 0x00, sizeof(c_filename_copy));
 		strncpy(c_filename_copy, c_filename, sizeof(c_filename_copy) - 1);
@@ -100,7 +101,10 @@ namespace LOG {
 		if (p_c_filename)
 			p_c_filename++;
 		else
-			p_c_filename = c_filename_copy;
+			p_c_filename = c_filename;
+#else
+  p_c_filename = c_filename;
+#endif
 
 		/* 填充行日志 */
 #if ( defined __linux__ ) || ( defined __unix ) || ( defined _AIX )
@@ -129,10 +133,10 @@ namespace LOG {
 		OFFSET_BUFPTR(log_buffer, log_bufptr, len, log_buflen, log_buf_remain_len);
 		len = SNPRINTF(log_bufptr, log_buf_remain_len, ".%06ld", (long)(tv.tv_usec));
 		OFFSET_BUFPTR(log_buffer, log_bufptr, len, log_buflen, log_buf_remain_len);
-		len = SNPRINTF(log_bufptr, log_buf_remain_len, " | %-5s", log_level_itoa[log_level]);
+		len = SNPRINTF(log_bufptr, log_buf_remain_len, " | %-5s | ", log_level_itoa[log_level]);
 		OFFSET_BUFPTR(log_buffer, log_bufptr, len, log_buflen, log_buf_remain_len);
 #ifdef _DEBUG
-		len = SNPRINTF(log_bufptr, log_buf_remain_len, " | %lu:%lu:%s:%ld | ", PROCESSID, THREADID, p_c_filename, c_fileline);
+		len = SNPRINTF(log_bufptr, log_buf_remain_len, "%lu:%lu:%s:%ld | ", PROCESSID, THREADID, p_c_filename, c_fileline);
 		OFFSET_BUFPTR(log_buffer, log_bufptr, len, log_buflen, log_buf_remain_len);
 #endif
 		
