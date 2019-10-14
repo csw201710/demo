@@ -1,0 +1,61 @@
+1. 添加定时任务
+	crontab -e
+	*/1 * * * * echo `date` >> /root/test.txt
+
+2. 查看执行日志
+	tail -f /var/log/cron
+
+	
+查看crontab服务状态：
+	service crond status
+加入开机自动启动:
+	chkconfig –level 35 crond on
+	
+	
+		crontab：定时任务的守护进程，精确到分，设计秒的我们一般写脚本  -->相当于闹钟
+				日志文件:  ll /var/log/cron*
+				编辑文件： vim /etc/crontab       
+				进程：ps -ef | grep crond  ==> /etc/init.d/crond restart
+				
+		
+		
+		安装crontab：
+			yum install crontabs	
+		$ cat /etc/crontab
+		# SHELL变量指定了系统要使用哪个shell，这里是bash
+		SHELL=/bin/bash
+		#PATH变量指定了系统执行命令的路径
+		PATH=/sbin:/bin:/usr/sbin:/usr/bin
+		#MAILTO变量指定了crond的任务执行信息将通过电子邮件发送给root用户
+		MAILTO=root
+
+
+		#HOME变量指定了在执行命令或者脚本时使用的主目录。
+		#星号（*）：代表所有可能的值，如month字段为星号，则表示在满足其它字段的制约条件后每月都执行该命令操作。
+		#逗号（,）：可以用逗号隔开的值指定一个列表范围，例如，“1,2,5,7,8,9”
+		#中杠（-）：可以用整数之间的中杠表示一个整数范围，例如“2-6”表示“2,3,4,5,6”
+		#正斜线（/）：可以用正斜线指定时间的间隔频率，例如“0-23/2”表示每两小时执行一次。
+		#小 结：
+		#    数字的表示最好用2为阿拉伯数字显示
+		#    周和日最好不要同时用
+		#    定时任务要加注解
+		#    可以定向到日志文件或者空文件
+		#    定时任务一定是绝对路径，且目录必须存在才能出结果
+		#    crontab 服务一定要开启运行
+			
+		# For details see man 4 crontabs
+
+		# Example of job definition:
+		# .---------------- minute (0 - 59)
+		# |  .------------- hour (0 - 23)
+		# |  |  .---------- day of month (1 - 31)
+		# |  |  |  .------- month (1 - 12) OR jan,feb,mar,apr ...
+		# |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
+		# |  |  |  |  |
+		# *  *  *  *  * user-name  command to be executed
+		
+		
+		
+注意点:
+	需要注意的是，如果要定义一个定时重启系统的任务，就必须将任务放到/etc/crontab文件，即使在root用户下创建一个定时重启系统的任务也是无效的。
+
