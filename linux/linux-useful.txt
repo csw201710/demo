@@ -1,0 +1,48 @@
+动态库，静态库
+	#ifdef __GNUC__ >= 4 // it means the compiler is GCC version 4.0 or later
+		#ifdef FBC_EXPORT
+			#warning "===== dynamic library ====="
+			#define FBC_API_PUBLIC __attribute__((visibility ("default")))
+			#define FBC_API_LOCAL __attribute__((visibility("hidden")))
+		#else
+			#warning "===== static library ====="
+			#define FBC_API_PUBLIC
+			#define FBC_API_LOCAL
+		#endif
+	#else
+		#error "##### requires gcc version >= 4.0 #####"
+	#endif
+
+
+	#ifdef __cplusplus
+	extern "C" {
+	#endif
+
+	 
+	#ifdef __cplusplus
+	}
+	#endif
+
+添加版本信息
+	#define VERSION "0.0.2" 
+	#define NAME    "xxxx"
+	printf("%s version: %s (%s, %s)\n", NAME, VERSION, __DATE__, __TIME__);
+
+添加库x.x.x 版本号
+	 gcc -shared  -fPIC   -Wl,-soname,libtest.so.0 -o libtest.so.0 test.cpp 
+	 
+	 soname: 影响一个可执行文件在链接器 ld 加载动态链接库时实际查找的动态库文件名字。
+
+	 原因:
+		在链接动态库文件生成可执行文件 main 时，还会将指定的 libxxxx.so 动态库的 SONAME 值写入到 main 可执行文件中
+		
+指定运行时加载路径:
+	-Wl,-rpath=./ 
+		后面也是路径，运行的时候用。这条编译指令会在编译时记录到target文件中，所以编译之后的target文件在执行时会按这里给出的路径去找库文件
+	 
+nm	objdump addr2line
+gcc 
+	-Wl,-Bsymbolic // 使用库内符号
+	
+
+
