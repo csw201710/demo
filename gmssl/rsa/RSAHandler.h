@@ -22,5 +22,10 @@ public:
 	int private_encrypt(std::string data, std::string &encrypted);
 	int public_decrypt(std::string data, std::string &decrypted);
 
+	int private_sign(std::string data, std::string &signData);
+	
+	int public_verify(std::string data, std::string &signData);
+	
+	RSA * createRSA(unsigned char * key, int ispubkey);
 };
 

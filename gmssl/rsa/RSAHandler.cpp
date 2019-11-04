@@ -214,11 +214,6 @@ int RSAHandler::private_encrypt(std::string  data, std::string & encrypted)
 					break;
 				subdata[j] = indata[j + i*exppadding];
 			}
-			// exppadding : 待加密数据长度
-			// smldata    : 待加密数据
-			// smlencrypted : 存放密文数据
-			//  rsa      : 存放密钥
-			// 
 
 			int ret = RSA_private_encrypt(exppadding, (const unsigned char*)subdata, (unsigned char*)encryptData, rsa, RSA_PKCS1_PADDING);
 			if (ret>0)
@@ -284,3 +279,64 @@ int RSAHandler::public_decrypt(std::string data, std::string & decrypted)
 
 	return result;
 }
+
+
+int RSAHandler::private_sign(std::string data, std::string & signData)
+{
+	RSA* rsa = m_prikey;
+	char outret[1024] = { 0 };
+	unsigned int outlen = sizeof(outret);
+	//data //// 最大长度96
+	
+	int result = RSA_sign(NID_sha1, (unsigned char*)data.data(), data.length(), (unsigned char*)outret, &outlen, rsa);
+	if (result != 1)
+	{
+		printf("sign error\n");
+		printf("%s\n", ERR_error_string(ERR_get_error(), NULL));
+		return -1;
+	}
+	signData.append(outret, outlen);
+	return 0;
+}
+
+int RSAHandler::public_verify(std::string data, std::string & signData)
+{
+	RSA* rsa = m_pubkey;
+	int result = RSA_verify(NID_sha1, (unsigned char*)data.data(), data.length(), (unsigned char*)signData.data(), signData.length(), rsa);
+	if (result != 1)
+	{
+		printf("verify error\n");
+		printf("%s\n", ERR_error_string(ERR_get_error(), NULL));
+		return -1;
+	}
+	return result;
+}
+
+RSA * RSAHandler::createRSA(unsigned char * key, int ispubkey)
+{
+	RSA *rsa = NULL;
+	BIO *keybio;
+	keybio = BIO_new_mem_buf(key, -1);
+	if (keybio == NULL)
+	{
+		return 0;
+	}
+
+	rsa = RSA_new();
+	if (ispubkey)
+	{
+		rsa = PEM_read_bio_RSA_PUBKEY(keybio, &rsa, NULL, NULL);
+	}
+	else
+	{
+		rsa = PEM_read_bio_RSAPrivateKey(keybio, &rsa, NULL, NULL);
+	}
+
+	if (rsa == NULL)
+	{
+		return 0;
+	}
+
+	return rsa;
+}
+
