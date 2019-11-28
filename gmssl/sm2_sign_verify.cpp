@@ -182,43 +182,54 @@ int load_private_key(const char *keyfile, const  char *passwd, EVP_PKEY **pri_ke
     return 0;
 }
 
-int ECDSA_SIG_get_signdataBuf(const ECDSA_SIG *sig, unsigned char *buf,int *bufLen)
+
+static int ECDSA_SIG_get_signdataBuf(const ECDSA_SIG *sig, unsigned char *buf,int *bufLen)
 {
-    /* (r, s) are pointed to (sig->r, sig->s), so dont free (r, s) */
-    const BIGNUM *r = NULL;
-    const BIGNUM *s = NULL;
+  /* (r, s) are pointed to (sig->r, sig->s), so dont free (r, s) */
+  const BIGNUM *r = NULL;
+  const BIGNUM *s = NULL;
 
-    /* check arguments */
-    if (!sig || !buf)
-    {
-        return -1;
-    }
+  /* check arguments */
+  if (!sig || !buf)
+  {
+      return -1;
+  }
+  if(*bufLen < 64){
+    ERROR("bufLen < 64");
+    return -1;
+  }
+  memset(buf, 0x00, 64);
+  /* check ECDSA_SIG
+   * `ECDSA_SIG_get0() return void
+   */
+  ECDSA_SIG_get0(sig, &r, &s);
 
-    /* check ECDSA_SIG
-     * `ECDSA_SIG_get0() return void
-     */
-    ECDSA_SIG_get0(sig, &r, &s);
+  int num_r = BN_num_bytes(r);
+  int num_s = BN_num_bytes(s);
 
-    int num_r = BN_num_bytes(r);
-    int num_s = BN_num_bytes(s);
 
-	if( num_s != 32 && num_s != 32){
-		return -1;
-	}
-
-    if (!BN_bn2bin(r, buf))
-    {
-
-        return -1;
-    }
-    if (!BN_bn2bin(s, buf + 32))
-    {
-
-        return -1;
-    }
-	*bufLen= 64;
-    return 0;
+if( num_s > 32 || num_r > 32)
+{
+  ERROR("num_s %d || num_r %d",num_s, num_r);
+  return -1;
 }
+
+
+  if (!BN_bn2bin(r, buf + (32-num_r)))
+  {
+      ERROR("r BN_bn2bin failed");
+      return -1;
+  }
+  if (!BN_bn2bin(s, buf + 32 + (32-num_s)))
+  {
+      ERROR("s BN_bn2bin failed");
+      return -1;
+  }
+  *bufLen= 64;
+  return 0;
+}
+
+
 
 int getfileBuf(char *filename, unsigned char *buf, int *bufLen)
 {
