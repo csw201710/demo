@@ -1,0 +1,55 @@
+1. 创建根证书
+	@echo off
+	set OPENSSL_CONF=openssl.ini
+
+	echo 创建秘钥
+	pause
+	openssl genrsa -out LocalRootCA.key 2048
+
+	echo 生成证书并自签名
+	pause
+	openssl req -sha256 -new -x509 -days 3650 -key LocalRootCA.key -out LocalRootCA.crt -subj "/CN=LocalRootCA"
+
+	echo 完成
+	pause
+
+
+2. 创建域名证书
+	@echo off
+	set OPENSSL_CONF=openssl.ini
+
+	echo 创建秘钥
+	pause
+	openssl genrsa -out aa.com.key 2048
+
+	echo 创建请求文件
+	pause
+	openssl req -new -sha256 -key aa.com.key -out aa.com.csr -subj "/CN=*.aa.com"
+
+	echo 生成证书并用根证书签名
+	pause
+	openssl x509 -req -in aa.com.csr -CA LocalRootCA.crt -CAkey LocalRootCA.key -CAcreateserial -days 3560 -out aa.com.crt -extfile aa.com.ini -extensions ext
+
+	echo 导出pfx,请输入密码
+	pause
+	openssl pkcs12 -export -out aa.com.pfx -inkey aa.com.key -in aa.com.crt
+
+	echo 完成
+	pause
+	
+	
+文件aa.com.ini
+	[ ext ]
+	subjectAltName = @dns
+
+	[ dns ]
+	DNS.1 = aa.com
+	DNS.2 = *.aa.com
+	DNS.3 = bb.com
+	DNS.4 = cc.com
+	DNS.5 = localhost
+	DNS.6 = 127.0.0.1
+
+
+
+
