@@ -1,0 +1,225 @@
+#if 0
+
+//入栈操作
+
+/**
+ * 压入一个nil类型的栈到L->top上
+ */
+LUA_API void lua_pushnil (lua_State *L)
+ 
+/**
+ * 压入一个浮点数字到栈L->top上
+ */
+LUA_API void lua_pushnumber (lua_State *L, lua_Number n)
+ 
+/**
+ * 压入一个int类型数字到栈L->top上
+ */
+LUA_API void lua_pushinteger (lua_State *L, lua_Integer n)
+ 
+/**
+ * 压入一个字符串类型到栈L->top上
+ */
+LUA_API const char *lua_pushlstring (lua_State *L, const char *s, size_t len)
+ 
+/**
+ * 压入一个字符串到栈L->top上
+ */
+LUA_API const char *lua_pushstring (lua_State *L, const char *s)
+ 
+/**
+ * 压入字符串到栈L->top上
+ */
+LUA_API const char *lua_pushvfstring (lua_State *L, const char *fmt,
+                                      va_list argp)
+ 
+/**
+ * 压入字符串到栈L->top上
+ */
+LUA_API const char *lua_pushfstring (lua_State *L, const char *fmt, ...)
+ 
+/**
+ * 在L->top栈上设置一个function
+ * c语言闭包函数
+ */
+LUA_API void lua_pushcclosure (lua_State *L, lua_CFunction fn, int n)
+ 
+/**
+ * 压入布尔值到L->top栈上
+ */
+LUA_API void lua_pushboolean (lua_State *L, int b)
+ 
+/**
+ * 压入用户数据地址到L->top栈上
+ */
+LUA_API void lua_pushlightuserdata (lua_State *L, void *p)
+ 
+/**
+ * 创建一个lua新线程,并将其压入栈。lua线程不是OS线程
+ * LUA的线程更多理解上是协程
+ */
+LUA_API int lua_pushthread (lua_State *L)
+
+
+
+
+
+
+
+
+
+//栈类型操作
+
+/**
+ * 栈类型。TValue栈上是方法、数字、nil等类型
+ */
+LUA_API int lua_type (lua_State *L, int idx)
+ 
+/**
+ * 类型编号转成类型名称
+ * 类型数组： luaT_typenames_[LUA_TOTALTAGS]
+ * 类型：nil=null boolean=布尔 function=方法 string=字符串
+ */
+LUA_API const char *lua_typename (lua_State *L, int t)
+ 
+/**
+ * 判断是否为function栈
+ */
+LUA_API int lua_iscfunction (lua_State *L, int idx)
+ 
+/**
+ * 判断是否为int类型栈
+ */
+LUA_API int lua_isinteger (lua_State *L, int idx)
+ 
+/**
+ * 判断是否为int类型
+ */
+LUA_API int lua_isnumber (lua_State *L, int idx)
+ 
+/**
+ * 判断是否为数字类型
+ */
+LUA_API int lua_isstring (lua_State *L, int idx)
+ 
+/**
+ * 判断是否为数字类型
+ */
+LUA_API int lua_isuserdata (lua_State *L, int idx)
+ 
+/**
+ * 判断两个栈是否一样，如果一样返回1，否则返回0
+ */
+LUA_API int lua_rawequal (lua_State *L, int index1, int index2)
+ 
+
+
+
+
+
+
+
+
+//类型强转
+
+/**
+ * 给定索引处的 Lua 值转换为 lua_Number 这样一个 C 类型
+ */
+LUA_API lua_Number lua_tonumberx (lua_State *L, int idx, int *pisnum)
+ 
+/**
+ * 把给定索引处的 Lua 值转换为 lua_Integer 这样一个有符号整数类型
+ * 必须：数字/字符串类型数字
+ */
+LUA_API lua_Integer lua_tointegerx (lua_State *L, int idx, int *pisnum) 
+ 
+/**
+ * 把指定的索引处的的 Lua 值转换为一个 C 中的 boolean 值（ 0 或是 1 ）。 和 Lua 中做的所有测试一样，
+ * lua_toboolean 会把任何 不同于 false 和 nil 的值当作 1 返回； 否则就返回 0 。 如果用一个无效索引去调用也会返回 0 。
+ */
+LUA_API int lua_toboolean (lua_State *L, int idx)
+ 
+/**
+ * 给定索引处的 Lua 值转换为一个 C 字符串
+ *  如果 len 不为 NULL ，它还把字符串长度设到 *len 中。 这个 Lua 值必须是一个字符串或是一个数字； 否则返回返回 NULL 。
+ *  如果值是一个数字，lua_tolstring 还会把堆栈中的那个值的实际类型转换为一个字符串。
+ */
+LUA_API const char *lua_tolstring (lua_State *L, int idx, size_t *len)
+ 
+/**
+ * 给定索引处的 Lua 值转换为一个 C 函数
+ */
+LUA_API lua_CFunction lua_tocfunction (lua_State *L, int idx)
+ 
+/**
+ * 给定索引处的值是一个完整的 userdata
+ */
+LUA_API void *lua_touserdata (lua_State *L, int idx)
+ 
+/**
+ * 把给定索引处的值转换为一个 Lua 线程（由 lua_State* 代表）。 这个值必须是一个线程；否则函数返回 NULL 。
+ */
+LUA_API lua_State *lua_tothread (lua_State *L, int idx)
+ 
+/**
+ * 把给定索引处的值转换为一般的 C 指针 (void*) 。
+ * 这个值可以是一个 userdata ，table ，thread 或是一个 function
+ */
+LUA_API const void *lua_topointer (lua_State *L, int idx)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//其它栈操作
+
+/**
+ * 通过指定索引值idx，寻找栈上L->top的栈分片TValue值
+ * 栈顶=idx=-1
+ * 栈底=idx=1
+ */
+static TValue *index2addr (lua_State *L, int idx)
+ 
+/**
+ * 针对lua_State进行扩容
+ */
+static void growstack (lua_State *L, void *ud)
+ 
+/**
+ * 检查lua_State的大小，如果栈小了，则扩容（默认栈大小：栈的默认尺寸是35）
+ * 说明：只会不断扩容，不会缩小
+ * 32/64位机器栈最大：1000000
+ * 16位机器栈最大：15000
+ */
+LUA_API int lua_checkstack (lua_State *L, int n)
+ 
+/**
+ * 从*from虚拟机结构上向*to虚拟机结构上拷贝n个栈分片内容
+ */
+LUA_API void lua_xmove (lua_State *from, lua_State *to, int n)
+ 
+/**
+ * 返回LUA 栈的个数
+ * 同时也是栈顶元素的索引，因为栈底是1
+ */
+LUA_API int lua_gettop (lua_State *L)
+ 
+/**
+ * 设置栈的高度，如果之前的栈顶比新设置的更高，那么高出来的元素会被丢弃，反之压入nil来补足大小
+ */
+LUA_API void lua_settop (lua_State *L, int idx)
+#endif
