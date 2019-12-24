@@ -1,0 +1,27 @@
+0x1 注入
+
+1.ptrace游戏进程
+作为最古老的注入方式，已经过时了，现在是个保护都有ptrace反调试
+2.修改classes.dex
+修改classes.dex在入口点的onCreate里添加代码载入自己的so，但是大多数保护都有自校验
+3.Xposed
+
+
+4.多开类程序
+
+VirtualApp，VirtualXposed或者平行空间，多开分身之类的软件，在程序的入口处或者其他地方load自己的so从而注入到多开的进程，优点是无需root
+
+
+
+0x2 修改
+
+当我们注入一个so进游戏后，接下来就要考虑如何修改了
+1.修改so
+
+2.hook
+
+
+
+
+
+
