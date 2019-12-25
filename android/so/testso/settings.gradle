@@ -1,0 +1,2 @@
+include ':app', ':libinject2'
+rootProject.name='testso'
