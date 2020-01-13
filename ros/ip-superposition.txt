@@ -1,0 +1,35 @@
+配置ip叠加
+添加nat伪装
+/ip firewall nat
+add action=masquerade chain=srcnat disabled=no out-interface=wan1
+add action=masquerade chain=srcnat disabled=no out-interface=wan2
+
+修改mangle
+/ip firewall mangle
+add action=mark-connection chain=prerouting comment=pcc1 disabled=no \
+    dst-address-type=!local in-interface=lan new-connection-mark=1st_conn \
+    passthrough=yes per-connection-classifier=both-addresses-and-ports:2/0
+add action=mark-routing chain=prerouting connection-mark=1st_conn disabled=no \
+    in-interface=lan new-routing-mark=1st_route passthrough=yes
+add action=mark-connection chain=prerouting comment=pcc2 disabled=no \
+    dst-address-type=!local in-interface=lan new-connection-mark=2st_conn \
+    passthrough=yes per-connection-classifier=both-addresses-and-ports:2/1
+add action=mark-routing chain=prerouting connection-mark=2st_conn disabled=no \
+    in-interface=lan new-routing-mark=2st_route passthrough=yes
+add action=mark-connection chain=input disabled=no in-interface=wan1 \
+    new-connection-mark=1st_conn passthrough=yes
+add action=mark-connection chain=input disabled=no in-interface=wan2 \
+    new-connection-mark=2st_conn passthrough=yes
+add action=mark-routing chain=output connection-mark=1st_conn disabled=no \
+    new-routing-mark=1st_route passthrough=yes
+add action=mark-routing chain=output connection-mark=2st_conn disabled=no \
+    new-routing-mark=2st_route passthrough=yes
+
+添加路由
+/ip route
+add disabled=no distance=1 dst-address=0.0.0.0/0 gateway=192.168.1.254%wan1 \
+    routing-mark=1st_route scope=30 target-scope=10
+add disabled=no distance=1 dst-address=0.0.0.0/0 gateway=192.168.1.254%wan2 \
+    routing-mark=2st_route scope=30 target-scope=10
+
+
