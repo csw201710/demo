@@ -68,3 +68,14 @@ bool ChangeExeIcon(LPCTSTR ExeFile,LPCTSTR IconFile)
 
 
 
+/*
+ win32创建外挂console窗口
+*/
+void createConsole(){
+	AllocConsole();
+	freopen("CONOUT$", "w", stdout);
+	std::cout << "This is a test info" << std::endl;
+	FreeConsole();
+}
+
+
