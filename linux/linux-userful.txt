@@ -43,21 +43,17 @@
 nm	objdump addr2line
 gcc 
 	-Wl,-Bsymbolic // 使用库内符号
-	
-
-
-
-
--Wl,--as-needed
-	添加有效的依赖so
-	[root@localhost t1]# gcc 1.c -fPIC -shared -Wl,-soname,lib1.so.0  -lz -lm -o lib1.so
-	[root@localhost t1]# ldd -u lib1.so 
-	Unused direct dependencies:
-		/lib64/libz.so.1
-		/lib64/libm.so.6
-	[root@localhost t1]# gcc 1.c -fPIC -shared -Wl,-soname,lib1.so.0 -Wl,--as-needed  -lz -lm -o lib1.so
-	[root@localhost t1]# ldd -u lib1.so 
-	[root@localhost t1]# 
+	-Wl,--exclude-libs,ALL 告诉链接器将静态库中的所有符号转换为隐藏
+	-Wl,--as-needed
+		添加有效的依赖so
+		[root@localhost t1]# gcc 1.c -fPIC -shared -Wl,-soname,lib1.so.0  -lz -lm -o lib1.so
+		[root@localhost t1]# ldd -u lib1.so 
+		Unused direct dependencies:
+			/lib64/libz.so.1
+			/lib64/libm.so.6
+		[root@localhost t1]# gcc 1.c -fPIC -shared -Wl,-soname,lib1.so.0 -Wl,--as-needed  -lz -lm -o lib1.so
+		[root@localhost t1]# ldd -u lib1.so 
+		[root@localhost t1]# 
 
 
 
