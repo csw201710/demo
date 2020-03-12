@@ -1,0 +1,3 @@
+注册表映像劫持
+计算机\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\
+
