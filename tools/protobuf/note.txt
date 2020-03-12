@@ -1,0 +1,128 @@
+整数转换为Varints
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE static uint8* UnsafeVarint(T value, uint8* ptr) {
+    static_assert(std::is_unsigned<T>::value,
+                  "Varint serialization must be unsigned");
+    if (value < 0x80) {
+      ptr[0] = static_cast<uint8>(value);
+      return ptr + 1;
+    }
+    ptr[0] = static_cast<uint8>(value | 0x80);
+    value >>= 7;
+    if (value < 0x80) {
+      ptr[1] = static_cast<uint8>(value);
+      return ptr + 2;
+    }
+    ptr++;
+    do {
+      *ptr = static_cast<uint8>(value | 0x80);
+      value >>= 7;
+      ++ptr;
+    } while (PROTOBUF_PREDICT_FALSE(value >= 0x80));
+    *ptr++ = static_cast<uint8>(value);
+    return ptr;
+  }
+
+
+template <typename T>
+PROTOBUF_MUST_USE_RESULT const char* VarintParse(const char* p, T* out) {
+  auto ptr = reinterpret_cast<const uint8*>(p);
+  uint32 res = ptr[0];
+  if (!(res & 0x80)) {
+    *out = res;
+    return p + 1;
+  }
+  uint32 byte = ptr[1];
+  res += (byte - 1) << 7;
+  if (!(byte & 0x80)) {
+    *out = res;
+    return p + 2;
+  }
+  return VarintParseSlow(p, res, out);
+}
+
+inline const char* VarintParseSlow(const char* p, uint32 res, uint64* out) {
+  auto tmp = VarintParseSlow64(p, res);
+  *out = tmp.second;
+  return tmp.first;
+}
+
+std::pair<const char*, uint64> VarintParseSlow64(const char* p, uint32 res32) {
+  uint64 res = res32;
+  for (std::uint32_t i = 2; i < 10; i++) {
+    uint64 byte = static_cast<uint8>(p[i]);
+    res += (byte - 1) << (7 * i);
+    if (PROTOBUF_PREDICT_TRUE(byte < 128)) {
+      return {p + i + 1, res};
+    }
+  }
+  return {nullptr, 0};
+}
+
+
+
+
+Wire Type
+
+每个消息项前面都会有对应的tag，才能解析对应的数据类型，表示tag的数据类型也是Varint。
+
+tag的计算方式: (field_number << 3) | wire_type
+
+每种数据类型都有对应的wire_type:
+Wire Type 	Meaning Used For
+0 	        Varint int32, int64, uint32, uint64, sint32, sint64, bool, enum
+1 	        64-bit fixed64, sfixed64, double
+2 	        Length-delimited string, bytes, embedded messages, packed repeated fields
+3 	        Start group groups (deprecated)
+4 	        End group groups (deprecated)
+5 	        32-bit fixed32, sfixed32, float
+
+wire_type最多只能支持8种，目前有6种。
+
+例子:
+	message Person {
+	   int32 id = 1;//24
+	   string name = 2;//wujingchao
+	   string email = 3;//wujingchao92@gmail.com
+	}
+	实际的二进制消息为:
+		08 18 12 0a 77 75 6a 69 6e 67 63 68 61 6f 1a 16 77 75 6a 69 6e 67 63 68 61 6f 39 32 40 67 6d 61 69 6c 2e 63 6f 6d
+
+	Person的id,field_number为1,wire_type为0，所以对应的tag为
+		1 <<< 3 | 0  = 0x08
+
+	Person的name,field_number为2,wire_type为2,所以对应的tag为
+		2 <<< 3 | 2 = 0x12
+		
+		
+		
+packed repeated与repeated的区别在于编码方式不一样，
+repeated将多个属性类型与值分开存储。而packed repeated采用Length-delimited方式。
+下面这个是官方文档的例子:
+		message Test4 {
+			repeated int32 d = 4 [packed=true];
+		}
+
+			22        // tag (field number 4, wire type 2)
+			06        // payload size (6 bytes)
+			03        // first element (varint 3)
+			8E 02     // second element (varint 270)
+			9E A7 05  // third element (varint 86942)
+		
+		message Test4 {
+			repeated int32 d = 4;
+		}	
+		如果没有packed的属性是这样存储的:
+			20 //tag(field number 4,wire type 0)
+			03 //first element (varint 3)
+			20 //tag(field number 4,wire type 0)
+			8E 02//second element (varint 270)
+			20 //tag(field number 4,wire type 0)
+			9E A7 05  // third element (varint 86942)
+
+		
+		
+		
+
+
+
