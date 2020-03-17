@@ -19,3 +19,16 @@
 	}
 	// End -->
 
+
+//恢复网页文字复制
+(function () {
+    var doc = document;
+    var bd = doc.body;
+    bd.onselectstart = bd.oncopy = bd.onpaste = bd.onkeydown = bd.oncontextmenu = bd.onmousemove = bd.onselectstart = bd.ondragstart = doc.onselectstart = doc.oncopy = doc.onpaste = doc.onkeydown = doc.oncontextmenu = null;
+    doc.onselectstart = doc.oncontextmenu = doc.onmousedown = doc.onkeydown = function () {
+        return true
+    };
+})()
+
+
+
