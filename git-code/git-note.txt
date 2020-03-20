@@ -92,3 +92,24 @@ https://segmentfault.com/q/1010000011005814?sort=created
 git filter-branch --tree-filter 'rm -f 文件名' HEAD
 
 
+
+//clone 子模块
+#!/bin/bash
+#git submodule init
+for i in $(git submodule | awk -F ' ' '{print $2}'); do
+    spath=$(git config -f .gitmodules --get submodule.$i.path)
+    surl=$(git config -f .gitmodules --get submodule.$i.url)
+    sbranch=$(git config -f .gitmodules --get submodule.$i.branch)
+    if [ -n "$sbranch" ]; then
+        #echo $spath, $surl, $sbranch
+        git clone -b $sbranch --depth 1 $surl $spath 
+    else
+        git clone --depth 1 $surl $spath
+    fi
+
+
+done
+
+#git submodule update
+
+
