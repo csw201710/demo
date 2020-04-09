@@ -1,0 +1,233 @@
+typedef struct ev_io
+{
+  int active; 
+  int pending; 
+  int priority; 
+  void *data; 
+  void (*cb)(struct ev_loop *loop, struct ev_io *w, int revents); 
+  struct ev_watcher_list *next;
+
+  int fd;
+  int events;
+} ev_io;
+
+typedef struct ev_watcher
+{
+  int active; 
+  int pending; 
+  int priority; 
+  void *data; 
+  void (*cb)(struct ev_loop *loop, struct ev_watcher *w, int revents);
+} ev_watcher;
+
+typedef struct ev_watcher_list
+{
+  int active; 
+  int pending; 
+  int priority; 
+  void *data; 
+  void (*cb)(struct ev_loop *loop, struct ev_watcher_list *w, int revents); 
+  struct ev_watcher_list *next;
+} ev_watcher_list;
+
+
+typedef struct ev_fork
+{
+  int active; 
+  int pending; 
+  int priority; 
+  void *data; 
+  void (*cb)(struct ev_loop *loop, struct ev_fork *w, int revents);
+} ev_fork;
+
+
+typedef struct ev_periodic
+{
+  int active; 
+  int pending; 
+  int priority; 
+  void *data; 
+  void (*cb)(struct ev_loop *loop, struct ev_periodic *w, int revents); 
+  ev_tstamp at;
+
+  ev_tstamp offset;
+  ev_tstamp interval;
+  ev_tstamp (*reschedule_cb)(struct ev_periodic *w, ev_tstamp now) ;
+} ev_periodic;
+
+
+
+
+
+typedef struct
+{
+  WL head;
+  unsigned char events;
+  unsigned char reify;
+  unsigned char emask;
+  unsigned char unused;
+  
+  unsigned int egen;
+} ANFD;
+
+
+
+
+# 1814 "ev.c"
+struct ev_loop
+{
+	ev_tstamp ev_rt_now;
+
+
+	# 1 "ev_vars.h" 1
+	# 42 "ev_vars.h"
+	ev_tstamp now_floor;
+	ev_tstamp mn_now;
+	ev_tstamp rtmn_diff;
+
+
+	W * rfeeds;
+	int rfeedmax;
+	int rfeedcnt;
+	/* 待处理的事件(二维)和其优先级(一维) */
+	ANPENDING *pendings [((((0x7f) & 4) ? +2 : 0) - (((0x7f) & 4) ? -2 : 0) + 1)]; 
+	int pendingmax [((((0x7f) & 4) ? +2 : 0) - (((0x7f) & 4) ? -2 : 0) + 1)];
+	int pendingcnt [((((0x7f) & 4) ? +2 : 0) - (((0x7f) & 4) ? -2 : 0) + 1)];
+	/* 目前待处理的事件最高优先级 */ 
+	int pendingpri;
+	ev_prepare pending_w;
+
+	ev_tstamp io_blocktime;
+	ev_tstamp timeout_blocktime;
+
+	int backend;
+	int activecnt;
+	sig_atomic_t volatile loop_done;
+
+	int backend_fd;
+	ev_tstamp backend_mintime;
+	void (*backend_modify)(struct ev_loop *loop, int fd, int oev, int nev);
+	void (*backend_poll)(struct ev_loop *loop, ev_tstamp timeout);
+	/* fd 信息数组, 以 fd 为索引 */
+	ANFD * anfds;
+	/* fd 信息数组长度 */
+	int anfdmax;
+
+	int evpipe [2];
+	ev_io pipe_w;
+	sig_atomic_t volatile pipe_write_wanted;
+	sig_atomic_t volatile pipe_write_skipped;
+
+
+	pid_t curpid;
+
+
+	char postfork;
+
+
+	void * vec_ri;
+	void * vec_ro;
+	void * vec_wi;
+	void * vec_wo;
+
+
+
+	int vec_max;
+
+
+
+	struct pollfd * polls;
+	int pollmax;
+	int pollcnt;
+	int * pollidxs;
+	int pollidxmax;
+
+
+
+	struct epoll_event * epoll_events;
+	int epoll_eventmax;
+	int * epoll_eperms;
+	int epoll_epermcnt;
+	int epoll_epermmax;
+	# 128 "ev_vars.h"
+	/* 改变了的 fd 数组(添加/删除) */
+	int * fdchanges;
+	/* 数组长度 */
+	int fdchangemax;
+	/* 使用计数 */
+	int fdchangecnt;
+
+	ANHE * timers;
+	int timermax;
+	int timercnt;
+
+
+	ANHE * periodics;
+	int periodicmax;
+	int periodiccnt;
+
+
+
+	ev_idle **idles [((((0x7f) & 4) ? +2 : 0) - (((0x7f) & 4) ? -2 : 0) + 1)];
+	int idlemax [((((0x7f) & 4) ? +2 : 0) - (((0x7f) & 4) ? -2 : 0) + 1)];
+	int idlecnt [((((0x7f) & 4) ? +2 : 0) - (((0x7f) & 4) ? -2 : 0) + 1)];
+
+	int idleall;
+
+	struct ev_prepare ** prepares;
+	int preparemax;
+	int preparecnt;
+
+	struct ev_check ** checks;
+	int checkmax;
+	int checkcnt;
+
+
+	struct ev_fork ** forks;
+	int forkmax;
+	int forkcnt;
+
+
+
+	struct ev_cleanup ** cleanups;
+	int cleanupmax;
+	int cleanupcnt;
+
+
+
+	sig_atomic_t volatile async_pending;
+	struct ev_async ** asyncs;
+	int asyncmax;
+	int asynccnt;
+
+
+
+	int fs_fd;
+	ev_io fs_w;
+	char fs_2625;
+	ANFS fs_hash [((0x7f) & 2) ? 16 : 1];
+
+
+	sig_atomic_t volatile sig_pending;
+
+	int sigfd;
+	ev_io sigfd_w;
+	sigset_t sigfd_set;
+
+
+	unsigned int origflags;
+
+
+	unsigned int loop_count;
+	unsigned int loop_depth;
+
+	void * userdata;
+
+	void (*release_cb)(struct ev_loop *loop) ;
+	void (*acquire_cb)(struct ev_loop *loop) ;
+	ev_loop_callback invoke_cb;
+	# 1820 "ev.c" 2
+
+};
+
+
