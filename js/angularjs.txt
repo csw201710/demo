@@ -1,0 +1,308 @@
+//=========================================================================================//
+AngularJS 
+	AngularJS 通过 ng-directives 扩展了 HTML。
+	ng-app 指令定义一个 AngularJS 应用程序。
+	ng-model 指令把元素值（比如输入域的值）绑定到应用程序。
+	ng-bind 指令把应用程序数据绑定到 HTML 视图。
+
+AngularJS 表达式
+	AngularJS 表达式写在双大括号内：{{ expression }}。
+	AngularJS 表达式把数据绑定到 HTML，这与 ng-bind 指令有异曲同工之妙。
+	AngularJS 将在表达式书写的位置"输出"数据。
+	AngularJS 表达式 很像 JavaScript 表达式：它们可以包含文字、运算符和变量。
+	实例 {{ 5 + 5 }} 或 {{ firstName + " " + lastName }}	
+	
+AnguarJS ng-href 路由	
+	ng-href 指令覆盖了原生的 <a> 元素 href 属性。
+	如果在 href 的值中有 AngularJS 代码，则需要使用 ng-href 而不是 href。
+	ng-href 指令确保了链接是正常的，即使在 AngularJS 执行代码前点击链接。
+
+AnguarJS ng-click
+	ng-click 指令告诉了 AngularJS HTML 元素被点击后需要执行的操作。
+	
+AnguarJS ng-if
+	语法:
+		<element ng-if="expression"></element>
+	ng-if 指令用于在表达式为 false 时移除 HTML 元素。
+	如果 if 语句执行的结果为 true，会添加移除元素，并显示。
+	ng-if 指令不同于 ng-hide， ng-hide 隐藏元素，而 ng-if 是从 DOM 中移除元素。
+
+AnguarJS ng-class
+	ng-class 指令用于给 HTML 元素动态绑定一个或多个 CSS 类。
+	ng-class 指令的值可以是字符串，对象，或一个数组。
+	如果是字符串，多个类名使用空格分隔。
+	如果是对象，需要使用 key-value 对，key 为你想要添加的类名，value 是一个布尔值。只有在 value 为 true 时类才会被添加。
+	如果是数组，可以由字符串或对象组合组成，数组的元素可以是字符串或对象。
+
+AnguarJS ng-route 路由
+	路由功能是由 routeProvider服务 和 ng-view 搭配实现，ng-view相当于提供了页面模板的挂载点，当切换URL进行跳转时，不同的页面模板会放在ng-view所在的位置; 然后通过 routeProvider 配置路由的映射。
+	路由是angularjs很重要的一环，它可以把你项目的页面串联起来，构成一个项目，常用的路由有ngRoute和ui-route，ngRoute是一个Module，提供路由和深层链接所需的服务和指令。
+	ngRoute模块中的$route服务会监测$location.url()的变化，并将它映射到预先定义的视图和控制器。
+	
+	 when()：配置路径和参数;
+		 when的第二个参数：
+			controller：对应路径的控制器函数，或者名称
+			controllerAs：给控制器起个别名
+			template：对应路径的页面模板，会出现在ng-view处,比如"<div>xxxx</div>"
+			templateUrl：对应模板的路径，比如"src/xxx.html"		resolve：这个参数着重说下，该属性会以键值对对象的形式，给路由相关的控制器绑定服务或者值。然后把执行的结果值或者对应的服务引用，注入到控制器中。如果resolve中是一个promise对象，那么会等它执行成功后，才注入到控制器中，此时控制器会等待resolve中的执行结果。
+			详细的例子，可以参考下面的样例。
+			redirectTo：重定向地址
+			reloadOnSearch：设置是否在只有地址改变时，才加载对应的模板;search和params改变都不会加载模板
+			caseInsensitiveMatch：路径区分大小写
+
+	 otherwise：配置其他的路径跳转，可以想成default。
+		Module.config(['$routeProvider', function($routeProvider) {
+			$routeProvider
+			.when('/mall-home', {
+				templateUrl: "template/mall-home.html?0726",
+				controller: 'mallHome',
+			})
+
+			.when('/shake-home', {
+				templateUrl: "template/shake-home.html?0726",
+				controller: 'shakeHome'
+			})
+
+			.otherwise({        //路由地址有误跳转此路由
+				redirectTo: '/mall-home'
+			});
+		}]);
+		
+	路由有几个常用的事件：
+		$routeChangeStart：这个事件会在路由跳转前触发
+		$routeChangeSuccess：这个事件在路由跳转成功后触发
+		$routeChangeError：这个事件在路由跳转失败后触发
+	
+	
+	
+	例子:		
+		
+		<!DOCTYPE html>
+		<html>
+		<head>
+		<meta charset="utf-8">
+		<title>AngularJS 路由实例 - 菜鸟教程</title>
+		<script src="https://cdn.staticfile.org/angular.js/1.7.0/angular.min.js"></script>
+		<script src="https://cdn.staticfile.org/angular.js/1.7.0/angular-route.min.js"></script>
+		</head>
+		<body ng-app='routingDemoApp'>
+		 
+			<h2>AngularJS 路由应用</h2>
+			<ul>
+				<li><a href="#!/">首页</a></li>
+				<li><a href="#!/computers">电脑</a></li>
+				<li><a href="#!/printers">打印机</a></li>
+				<li><a href="#!/blabla">其他</a></li>
+			</ul>
+			 
+			<div ng-view></div>
+			<script>
+				angular.module('routingDemoApp',['ngRoute'])
+				.config(['$routeProvider', function($routeProvider){
+					$routeProvider
+					.when('/',{template:'这是首页页面'})
+					.when('/computers',{template:'这是电脑分类页面'})
+					.when('/printers',{template:'这是打印机页面'})
+					.otherwise({redirectTo:'/'});
+				}]);
+			</script>
+		</body>
+		</html>
+	例子2：
+		1.index.html代码如下：
+
+		<!DOCTYPE html>
+		<html>
+		<head>
+			<meta charset="utf-8" />
+			<script type="text/javascript" src="lib/angular.js"></script>
+			<script type="text/javascript" src="js/app.js"></script>
+			<script type="text/javascript" src="lib/angular-route.js"></script>
+			<title></title>
+		</head>
+		<body ng-app="app">
+			<h1>我的邮件</h1>
+
+		<!--模板（子视图）将在这个地方插入-->
+			<div ng-view>
+
+			</div>
+		</body>
+		</html>
+
+		3.app.js内容：
+
+		var app = angular.module('app', ['ngRoute']);
+		//邮件
+		var messages=[{
+			id:0,
+			sender:"002",
+			subject:"subject001",
+			date:"2015-4-2 09:00:4",
+			recipient:"obj001",
+			message:"this is a test001"
+		},{
+			id:1,
+			sender:"002",
+			subject:"subject002",
+			date:"2015-4-2 23:12:56",
+			recipient:"obj002",
+			message:"this is a test002"
+		}];
+
+		app.controller('emailList', ['$scope', function($scope){
+			$scope.emails=messages;
+		}]);
+		app.controller('emailDetail',['$scope','$routeParams',function($scope,$routeParams){
+			$scope.email=messages[$routeParams.id];
+		}]);
+
+		app.config(['$routeProvider',function($routeProvider) {
+			$routeProvider.when('/', {
+				controller:'emailList',
+				templateUrl:'./template/emailList.html'
+
+		　　　//这个使用/view/:id，当路径进行匹配的时候会自动解析出其中的id，可以通过$routeParams.id获取。如：
+
+		　　// URL: http://server.com/index.html#/Chapter/1/Section/2?search=moby
+		　　// Route: /Chapter/:chapterId/Section/:sectionId
+		　　// Then
+		　　//$routeParams ==> {chapterId:'1', sectionId:'2', search:'moby'}
+
+			}).when('/view/:id',{
+				controller:'emailDetail',
+				templateUrl:'./template/emailDetail.html'
+			});
+		}]);
+
+		4.emailList.html和emailDetail.html内容：
+
+		<table>
+			<tr><td>发送者</td><td>主题</td><td>日期</td></tr>
+			<tr ng-repeat="email in emails">
+				<td>{{email.sender}}</td>
+				<td><a href="#/view/{{email.id}}">{{email.subject}}</a></td>
+				<td>{{email.date}}</td>
+			</tr>
+		</table>
+
+		<div>
+			<h2>主题：{{email.subject}}</h2>
+			<h3>发送者：{{email.sender}}</h3>
+			<h3>日期：{{email.date}}</h3>
+			<h3>接收者：{{email.recipient}}</h3>
+			<h2>内容：{{email.message}}</h2>
+			<h4><a href="#/"><<<返回</a></h4>
+		</div>
+	
+AnguarJS 国际化
+	使用国际化
+		<h1>{{ 'TITLE' | translate }}</h1>
+		<span translate="FOO"></span>
+	
+
+		
+angularjs 单页多视图
+	单页 Web 应用中 AngularJS 通过 #! + 标记 实现
+	
+AnguarJS constant全局变量
+	设置全局变量
+		var test2 = 'tank';         //方法1，定义全局变量  	  
+		var phonecatApp = angular.module('phonecatApp');  
+		phonecatApp.value('test',{"test":"test222","test1":"test111"});  //方法2定义全局变量  
+		phonecatApp.constant('constanttest', 'this is constanttest');    //方法3定义全局变量  
+	
+AngularJS 应用
+	AngularJS 模块（Module） 定义了 AngularJS 应用。
+	AngularJS 控制器（Controller） 用于控制 AngularJS 应用。
+	ng-app指令指明了应用, ng-controller 指明了控制器。
+	
+	
+	//这种写法叫inline-annotation，看文档依赖注入
+	//这种写法的主要目的是为了避免源码压缩(uglify)时变量名被替换，导致依赖注入失败的问题。
+	var myApp = angular.module('MyApp', []);
+	myApp.controller('MyController', ['$scope', function($scope){
+	  // todo...
+	}]);
+	
+	$scope 对象
+		AngularJS 使用$scope 对象来调用控制器。
+		在 AngularJS 中， $scope 是一个应用对象(属于应用变量和函数)。
+		控制器的 $scope （相当于作用域、控制范围）用来保存AngularJS Model(模型)的对象。
+		
+	$rootScope
+		在 AngularJS 中，作用域原型链的顶端是$rootScope
+		如果我们在子作用域中访问一个父作用域中定义的属性,AnguarJS 将会寻找到$rootScope 为止，如果还是找不到，则会返回 undefined。
+		$rootscope 是所有 $scope 的最上层对象,可以理解为一个 Angular 应用中的全局作用域对象。所以为$rootscope添加的属性，在所有的控制器中都可以访问得到。但是为它附加太多逻辑或者变量并不是一个好主意,和js全局污染是一样的.
+		
+	$route
+		用于在js里对路由的操作。
+		reload() 使路由服务重新加载当前路由，即使路由没有改变。
+		
+	$window
+		一个浏览器窗口对象的引用。它是一个全局对象
+	
+	$location
+		$location提供了一些常用的操作和获取地址栏里的地址的方法。
+		 $location.search(); url的参数的序列化json对象
+		 
+	$document
+		$document和angular.element(document)是一样的，是一个整体的dom结构树
+	
+	$interval
+		window.setInterval的Angular包装形式
+		
+	Angular.js跨controller实现参数传递的两种方法
+		1. 可以写一个包含get/set的service,取参数/赋参数
+				.factory('paramService',function(){
+					 return {
+					 result:[],
+					 getResult:function(){
+					 return this.result;
+					 },
+					 setResult:function(res){
+					 this.result = res;
+					 }
+					 };
+				})
+			然后可以在controllerOne中赋值,在controllerTwo中取值	
+				// 赋值
+				.controller('one',function(paramService){
+				 paramService.setResult('one');
+				})
+				 
+				// 取值
+				.controller('two',function(paramService){
+				 var param = paramService.getResult();
+				})
+		2. $stateParams 第二种方法用于路由间传递参数,用途也比较广泛,使用场景比较多
+			// 传参
+			.state('one',{
+			 url:'one',
+			 controller:'one',
+			 template:'one.html',
+			 params:{
+			 name:'john'
+			 }
+			})
+			 
+			// 取参
+			.controller('one',function($stateParams){
+			 var name = $stateParams.name;
+			})
+			
+			
+		
+	
+angular中的事件广播
+	$on(name,handler) 注册一个事件处理函数，该函数在特定的事件被当前作用域收到（从父级或者子级作用域）时将被调用。
+	$emit(name,args) 向当前父作用域发送一个事件，直至根作用域。
+	$broadcast(name,args) 向当前作用域下的子作用域发送一个事件。
+	name表示事件名称，args表示事件传播的数据，handler表示在接受到传递时要执行的回调
+	
+	
+
+
+
+
+//=========================================================================================//
