@@ -1,0 +1,143 @@
+lua 5.3
+lua调用dll执行函数或注册模块
+	main.lua:
+		local function testLoadLib()
+			local path = 'D:\\xxx\\xxx\\xxx\\xxx\\xxx\\luaDll.dll'
+			--local f = package.loadlib(path, "luaopen_mylib")
+			--print("f:",type(f)); f()
+			local f = package.loadlib(path, "luaopen_ldll")
+			print("f:",type(f)); f()
+			
+			local ldll = require("ldll")
+			print("ldll:", ldll.version())
+			ldll.show()
+		end
+		
+		
+	dll.cpp:
+		#include <windows.h>
+		#ifdef __cplusplus
+		extern "C"
+		{
+		#endif
+			#include "lua.h"
+			#include "lualib.h"
+			#include "lauxlib.h"
+			__declspec(dllexport) int luaopen_mylib(lua_State *L);
+			__declspec(dllexport) int luaopen_ldll(lua_State *L);
+		#ifdef __cplusplus
+		}
+		#endif
+
+
+		static int version(lua_State *L) {
+			lua_pushstring(L, "1.0.0");
+			return 1;
+		}
+
+		static int show(lua_State *L) {
+			puts("show");
+			return 1;
+		}
+
+		static const luaL_Reg ldll_func[] = {
+			{ "version", version },
+			{ "show", show },
+			{ NULL, NULL },
+		};
+
+		static int _lua_load(lua_State *L) {
+			luaL_newlib(L, ldll_func);
+			return 1;
+		}
+
+		int luaopen_ldll(lua_State *L) { // require("ldll")会调用到这里
+			puts("luaopen_ldll");
+			luaL_requiref(L, "ldll", _lua_load, 1);
+			lua_pop(L, 1);  /* remove lib */
+			return 1;
+		}
+
+
+		int luaopen_mylib(lua_State *L) {
+			printf("this is a loadlib\n");
+			return 1;
+		}
+
+		BOOL APIENTRY DllMain(HMODULE hModule,
+			DWORD  ul_reason_for_call,
+			LPVOID lpReserved
+		)
+		{
+			switch (ul_reason_for_call)
+			{
+			case DLL_PROCESS_ATTACH:
+			case DLL_THREAD_ATTACH:
+			case DLL_THREAD_DETACH:
+			case DLL_PROCESS_DETACH:
+				break;
+			}
+			return TRUE;
+		}
+
+		
+c函数调用lua脚本执行其中所定义的函数:
+	add.lua:
+		function add ( x, y )
+			return x + y
+		end
+	main.c:
+		//加载脚本
+		if (luaL_dofile(L, "add.lua") != 0) {
+			printf("luaL_dofile failed\n");
+		}
+		lua_getglobal(L, "add");
+		//printf("lua_gettop: %d\n", lua_gettop(L));
+		//第一个参数压栈
+		lua_pushnumber(L, 10);
+		//printf("lua_gettop: %d\n", lua_gettop(L));
+		//第二个参数压栈
+		lua_pushnumber(L, 20);
+		//printf("lua_gettop: %d\n", lua_gettop(L));
+		#if 0
+		lua_pcall(L, 2, 1, 0);
+		#else
+		lua_call(L, 2, 1);
+		#endif
+		//得到返回值
+		sum = (int)lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	
+c程序定义函数给lua脚本调用:
+	main.lua
+		local mylib= require "mylib" 
+		mylib.show()
+	main.c
+		int show(lua_State *L)
+		{
+			printf("function from cpp!\n");
+
+			return 0;
+		}
+		static luaL_Reg const mylib[] =
+		{
+			{ "stdfile",            show }
+			,{ 0,              0 }
+		};
+		LUAMOD_API int luaopen_mylib(lua_State *L) {
+			luaL_newlib(L, mylib);
+			return 1;
+		}
+		luaL_requiref(L, "mylib", luaopen_mylib, 1);
+		lua_pop(L, 1);  /* remove lib */
+		luaL_openlibs(L);
+		//加载脚本
+		if (luaL_dofile(L, "main.lua") != 0) {
+			printf("luaL_dofile failed\n");
+		}
+
+	
+
+		
+
+
