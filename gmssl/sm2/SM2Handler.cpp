@@ -234,6 +234,11 @@ int SM2Handler::public_decrypt(std::string & data, std::string & decrypt) {
 int SM2Handler::private_decrypt(std::string & data, std::string & decrypt) {
 	return _decrypt(data, decrypt, 1);
 }
+
+
+
+// TODO  isprivate是无效参数，sm2加密暂时只能是公钥加密，私钥解密
+//       需要加密的数据长度必须大于0 小于等于 1024 之间，当数据长度为0时会造成无限等待,函数不返回
 int SM2Handler::_encrypt(std::string & data, std::string & encrypt, int isprivate)
 {
 	const unsigned char* inData = (const unsigned char*)data.data();
