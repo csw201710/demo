@@ -8,7 +8,7 @@ typedef struct pkcs7_st {
 # define PKCS7_S_HEADER  0
 # define PKCS7_S_BODY    1
 # define PKCS7_S_TAIL    2
-    int state;                  /* used during processing */
+    int state;                  /* used during processing */  //OBJ_nid2obj(type);
     int detached;
     ASN1_OBJECT *type;
     /* content as defined by the type */
@@ -34,6 +34,184 @@ typedef struct pkcs7_st {
         ASN1_TYPE *other;
     } d;
 } PKCS7;
+
+//====================================enc start=============================================//
+typedef struct pkcs7_enveloped_st {
+    ASN1_INTEGER *version;      /* version 0 */ //ASN1_INTEGER_set(p7->d.enveloped->version, 0)
+    STACK_OF(PKCS7_RECIP_INFO) *recipientinfo;//存放加密算法，加密密钥，证书信息
+    PKCS7_ENC_CONTENT *enc_data;   //存放加密数据，加密算法，
+} PKCS7_ENVELOPE;
+
+
+typedef struct pkcs7_enc_content_st {
+    ASN1_OBJECT *content_type;   //OBJ_nid2obj(NID_pkcs7_data);
+    X509_ALGOR *algorithm;    //算法的obj
+    ASN1_OCTET_STRING *enc_data; /* [ 0 ] */  //加密数据存放位置
+    const EVP_CIPHER *cipher;  //加密算法
+} PKCS7_ENC_CONTENT;
+
+typedef struct pkcs7_recip_info_st {
+    ASN1_INTEGER *version;      /* version 0 */
+    PKCS7_ISSUER_AND_SERIAL *issuer_and_serial;
+    X509_ALGOR *key_enc_algor;  //指定 加密key 加密算法
+	    
+    ASN1_OCTET_STRING *enc_key;  //unsigned char *ek = NULL;size_t eklen;// 加密密钥对位置  ASN1_STRING_set0(ri->enc_key, ek, eklen); 
+    X509 *cert;                 /* get the pub-key from this */
+} PKCS7_RECIP_INFO;
+
+typedef struct pkcs7_issuer_and_serial_st {
+    X509_NAME *issuer;
+    ASN1_INTEGER *serial;
+} PKCS7_ISSUER_AND_SERIAL;
+
+
+struct X509_algor_st {
+    ASN1_OBJECT *algorithm; //OBJ_nid2obj(NID_rsaEncryption)
+    ASN1_TYPE *parameter;  //ASN1_TYPE_set(alg->parameter, V_ASN1_NULL, 0); //内部存放iv数据
+} /* X509_ALGOR */ ;
+
+
+PKCS7_set_type(p7, NID_pkcs7_enveloped);
+	 p7->type = OBJ_nid2obj(NID_pkcs7_enveloped);
+	p7->d.enveloped = PKCS7_ENVELOPE_new()
+	ASN1_INTEGER_set(p7->d.enveloped->version, 0) //设置版本
+	p7->d.enveloped->enc_data->content_type = OBJ_nid2obj(NID_pkcs7_data);
+	
+PKCS7_set_cipher(p7,EVP_des_cbc());
+	PKCS7_ENC_CONTENT *ec = p7->d.enveloped->enc_data;
+	ec->cipher = cipher;//EVP_des_cbc()
+	
+//设置接收者证书，获取公钥用于加密对称密钥	
+PKCS7_add_recipient(p7,x509_Cert);
+	PKCS7_RECIP_INFO *ri = PKCS7_RECIP_INFO_new();
+	PKCS7_RECIP_INFO_set(ri, x509);//int PKCS7_RECIP_INFO_set(PKCS7_RECIP_INFO *p7i, X509 *x509)	
+		ASN1_INTEGER_set(p7i->version, 0)
+		X509_NAME_set(&p7i->issuer_and_serial->issuer,X509_get_issuer_name(x509))
+		ASN1_INTEGER_free(p7i->issuer_and_serial->serial);
+		p7i->issuer_and_serial->serial = ASN1_INTEGER_dup(X509_get_serialNumber(x509))
+		pkey = X509_get0_pubkey(x509);
+		
+		ret = pkey->ameth->pkey_ctrl(pkey, ASN1_PKEY_CTRL_PKCS7_ENCRYPT, 0, p7i);
+			X509_ALGOR *alg = NULL;
+			alg = ri->key_enc_algor;
+			X509_ALGOR_set0(alg, OBJ_nid2obj(NID_rsaEncryption), V_ASN1_NULL, 0);//int X509_ALGOR_set0(X509_ALGOR *alg, ASN1_OBJECT *aobj, int ptype, void *pval)
+				alg->parameter = ASN1_TYPE_new();
+				ASN1_OBJECT_free(alg->algorithm);
+				alg->algorithm = aobj;
+				ASN1_TYPE_set(alg->parameter, ptype, pval);
+		p7i->cert = x509;
+				
+	PKCS7_add_recipient_info(p7, ri);
+		STACK_OF(PKCS7_RECIP_INFO) *sk = p7->d.enveloped->recipientinfo;
+		sk_PKCS7_RECIP_INFO_push(sk, ri)
+	
+BIO *PKCS7_dataInit(PKCS7 *p7, BIO *bio)
+		STACK_OF(PKCS7_RECIP_INFO) *rsk = NULL;
+		X509_ALGOR *xalg = NULL;
+		PKCS7_RECIP_INFO *ri = NULL;
+		const EVP_CIPHER *evp_cipher = NULL;
+		
+        rsk = p7->d.enveloped->recipientinfo;
+        xalg = p7->d.enveloped->enc_data->algorithm;
+		evp_cipher = p7->d.enveloped->enc_data->cipher;
+		
+        unsigned char key[EVP_MAX_KEY_LENGTH];
+        unsigned char iv[EVP_MAX_IV_LENGTH];
+        int keylen, ivlen;
+        EVP_CIPHER_CTX *ctx;
+
+		
+        keylen = EVP_CIPHER_key_length(evp_cipher);
+        ivlen = EVP_CIPHER_iv_length(evp_cipher);
+		
+		
+		
+		
+		xalg->algorithm = OBJ_nid2obj(EVP_CIPHER_type(evp_cipher));
+		
+		//随机生成iv
+        if (ivlen > 0)
+            if (RAND_bytes(iv, ivlen) <= 0)
+                goto err;
+        if (EVP_CipherInit_ex(ctx, evp_cipher, NULL, NULL, NULL, 1) <= 0)
+            goto err;
+		//随机生成key
+        if (EVP_CIPHER_CTX_rand_key(ctx, key) <= 0)
+            goto err;
+        if (EVP_CipherInit_ex(ctx, NULL, NULL, key, iv, 1) <= 0)
+            goto err;
+		
+		pkcs7_encode_rinfo(ri, key, keylen)
+				static int pkcs7_encode_rinfo(PKCS7_RECIP_INFO *ri,
+											  unsigned char *key, int keylen)
+				{
+					EVP_PKEY_CTX *pctx = NULL;
+					EVP_PKEY *pkey = NULL;
+					unsigned char *ek = NULL;
+					int ret = 0;
+					size_t eklen;
+
+					pkey = X509_get0_pubkey(ri->cert);
+
+					if (!pkey)
+						return 0;
+
+					pctx = EVP_PKEY_CTX_new(pkey, NULL);
+					if (!pctx)
+						return 0;
+
+					if (EVP_PKEY_encrypt_init(pctx) <= 0)
+						goto err;
+
+				#ifndef OPENSSL_NO_SM2
+					if (OBJ_obj2nid(ri->key_enc_algor->algorithm) == NID_sm2encrypt_with_sm3) {
+						EVP_PKEY_CTX_set_ec_scheme(pctx, NID_sm_scheme);
+						EVP_PKEY_CTX_set_ec_encrypt_param(pctx, NID_sm3);
+					}
+				#endif
+
+					if (EVP_PKEY_CTX_ctrl(pctx, -1, EVP_PKEY_OP_ENCRYPT,
+										  EVP_PKEY_CTRL_PKCS7_ENCRYPT, 0, ri) <= 0) {
+						PKCS7err(PKCS7_F_PKCS7_ENCODE_RINFO, PKCS7_R_CTRL_ERROR);
+						goto err;
+					}
+
+					if (EVP_PKEY_encrypt(pctx, NULL, &eklen, key, keylen) <= 0)
+						goto err;
+
+					ek = OPENSSL_malloc(eklen);
+
+					if (ek == NULL) {
+						PKCS7err(PKCS7_F_PKCS7_ENCODE_RINFO, ERR_R_MALLOC_FAILURE);
+						goto err;
+					}
+
+					if (EVP_PKEY_encrypt(pctx, ek, &eklen, key, keylen) <= 0)
+						goto err;
+
+					ASN1_STRING_set0(ri->enc_key, ek, eklen);//设置加密过后的私钥
+					ek = NULL;
+
+					ret = 1;
+
+				 err:
+					EVP_PKEY_CTX_free(pctx);
+					OPENSSL_free(ek);
+					return ret;
+
+				}
+
+		
+		
+		
+BIO *PKCS7_dataDecode(PKCS7 *p7, EVP_PKEY *pkey, BIO *in_bio, X509 *pcert)
+		enc_alg = p7->d.enveloped->enc_data->algorithm;
+		
+		EVP_CIPHER_asn1_to_param(evp_ctx, enc_alg->parameter)
+		
+//====================================enc end=============================================//
+//====================================sign start=============================================//
+
 
 
 
@@ -201,16 +379,8 @@ typedef struct pkcs7_st {
 
 
 	
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+	
+//====================================sign end=============================================//
+
+
 
