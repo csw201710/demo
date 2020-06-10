@@ -1,0 +1,80 @@
+jna 返回字符串
+	1. 缺点：不知道new多大的Memory
+	/// C定义接口(字符串当作参数传入，返回结果也由此传出):
+		void getString( char* pRetStr);
+		
+		/// Java声明接口
+		void getString( Pointer strPointer);
+		/// Java调用接口
+		Pointer strPointer = new Memory( 1024 );
+		clib.getString( strPointer );
+		
+		
+	2. 两段式调用，同一个函数调用两次。第一次获取到需要分配多大内存，new 出对应大小的Memory
+		/// C定义接口
+		/// result：返回结果 resultLength:返回字符串的长度
+		int getString( char* result, int * resultLength); 
+		
+		/// Java 声明接口
+		int getString( POinter result, IntByReference resultLength);
+		/// Java调用接口
+		Pointer resultv = Pointer.NULL; //char* resul 指定一个空指针
+		IntByReference resultLength = new IntByReference(); //int* resultlength
+		 
+		//调用两次，第一次获取结果的长度
+		//第二次再根据长度去获取字节数组
+		int getVersionInfo = CFJna.library.GetVersionInfo(resultv, resultLength);
+		System.out.println("getVersionInfo:"+getVersionInfo);
+				
+		if(getVersionInfo == SUCCESS) {//表示获取成功
+			//第一次获取结果的长度
+			int vesionLen = resultLength.getValue();
+			System.out.println("versionLen:"+vesionLen);
+					
+			//第二次再根据长度去获取字节数组
+			resultv = new Memory(vesionLen);
+			getVersionInfo = CFJna.library.GetVersionInfo(resultv, resultLength);
+			System.out.println("getVersionInfo:"+getVersionInfo);
+		 
+			//获取字节数组
+			byte[] byteArray = resultv.getByteArray(0, vesionLen);
+			//转化成字符
+			System.out.println(new String(byteArray,"GB2312"));
+		}
+		
+
+	3. 自我管理，自己管理内存。在C里面malloc内存，java调用完函数，手动再调用C++的free函数
+		/// C定义接口(字符串当作参数传入):
+		void example2_getString(char** ppszVal)
+		{
+			*ppszVal = (char*)malloc(sizeof(char) * 6);
+			memset(*ppszVal, 0, sizeof(char) * 6);
+			strcpy(*ppszVal, "hello");
+		}
+
+		void example2_cleanup(char* pszVal)
+		{
+			free(pszVal);
+		}
+
+
+		/// Java声明接口
+		public void example2_getString(PointerByReference val);
+		public void example2_cleanup(Pointer p);
+		/// Java调用接口
+		// get string from C
+		// allocate a void**
+		final PointerByReference ptrRef = new PointerByReference();
+		// call the C function
+		clib.example2_getString(ptrRef);
+		// extract the void* that was allocated in C
+		final Pointer p = ptrRef.getValue();
+		// extract the null-terminated string from the Pointer
+		final String val = p.getString(0);
+		System.out.println("example 2b: " + val);
+
+		// clean up memory allocated in C
+		clib.example2_cleanup(p);
+
+		
+
