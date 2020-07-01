@@ -1,0 +1,54 @@
+MFC doc.OnNewDocument() 调用流程
+>	vmessGet.exe!CvmessGetDoc::OnNewDocument() 行 42	C++
+ 	vmessGet.exe!CSingleDocTemplate::OpenDocumentFile(const char * lpszPathName, int bAddToMRU, int bMakeVisible) 行 152	C++
+ 	vmessGet.exe!CSingleDocTemplate::OpenDocumentFile(const char * lpszPathName, int bMakeVisible) 行 83	C++
+ 	vmessGet.exe!CDocManager::OnFileNew() 行 912	C++
+ 	vmessGet.exe!CWinApp::OnFileNew() 行 21	C++
+ 	vmessGet.exe!_AfxDispatchCmdMsg(CCmdTarget * pTarget, unsigned int nID, int nCode, void(CCmdTarget::*)() pfn, void * pExtra, unsigned int nSig, AFX_CMDHANDLERINFO * pHandlerInfo) 行 77	C++
+ 	vmessGet.exe!CCmdTarget::OnCmdMsg(unsigned int nID, int nCode, void * pExtra, AFX_CMDHANDLERINFO * pHandlerInfo) 行 372	C++
+ 	vmessGet.exe!CWinApp::ProcessShellCommand(CCommandLineInfo & rCmdInfo) 行 35	C++
+ 	vmessGet.exe!CvmessGetApp::InitInstance() 行 127	C++
+ 	vmessGet.exe!AfxWinMain(HINSTANCE__ * hInstance, HINSTANCE__ * hPrevInstance, char * lpCmdLine, int nCmdShow) 行 37	C++
+ 	vmessGet.exe!WinMain(HINSTANCE__ * hInstance, HINSTANCE__ * hPrevInstance, char * lpCmdLine, int nCmdShow) 行 26	C++
+
+	
+	
+	
+MFC doc.Serialize(CArchive& ar) 点击"打开"，调用流程
+>	vmessGet.exe!CvmessGetDoc::Serialize(CArchive & ar) 行 58	C++
+ 	vmessGet.exe!CDocument::OnOpenDocument(const char * lpszPathName) 行 756	C++
+ 	vmessGet.exe!CSingleDocTemplate::OpenDocumentFile(const char * lpszPathName, int bAddToMRU, int bMakeVisible) 行 169	C++
+ 	vmessGet.exe!CDocManager::OpenDocumentFile(const char * lpszFileName, int bAddToMRU) 行 1055	C++
+ 	vmessGet.exe!CDocManager::OpenDocumentFile(const char * lpszFileName) 行 964	C++
+ 	vmessGet.exe!CWinApp::OpenDocumentFile(const char * lpszFileName) 行 85	C++
+ 	vmessGet.exe!CDocManager::OnFileOpen() 行 924	C++
+ 	vmessGet.exe!CWinApp::OnFileOpen() 行 29	C++
+ 	vmessGet.exe!_AfxDispatchCmdMsg(CCmdTarget * pTarget, unsigned int nID, int nCode, void(CCmdTarget::*)() pfn, void * pExtra, unsigned int nSig, AFX_CMDHANDLERINFO * pHandlerInfo) 行 77	C++
+ 	vmessGet.exe!CCmdTarget::OnCmdMsg(unsigned int nID, int nCode, void * pExtra, AFX_CMDHANDLERINFO * pHandlerInfo) 行 372	C++
+ 	vmessGet.exe!CFrameWnd::OnCmdMsg(unsigned int nID, int nCode, void * pExtra, AFX_CMDHANDLERINFO * pHandlerInfo) 行 989	C++
+ 	vmessGet.exe!CWnd::OnCommand(unsigned int wParam, long lParam) 行 2794	C++
+ 	vmessGet.exe!CFrameWnd::OnCommand(unsigned int wParam, long lParam) 行 384	C++
+ 	vmessGet.exe!CWnd::OnWndMsg(unsigned int message, unsigned int wParam, long lParam, long * pResult) 行 2107	C++
+ 	vmessGet.exe!CWnd::WindowProc(unsigned int message, unsigned int wParam, long lParam) 行 2093	C++
+ 	vmessGet.exe!AfxCallWndProc(CWnd * pWnd, HWND__ * hWnd, unsigned int nMsg, unsigned int wParam, long lParam) 行 265	C++
+ 	vmessGet.exe!AfxWndProc(HWND__ * hWnd, unsigned int nMsg, unsigned int wParam, long lParam) 行 418	C++
+
+MFC doc.Serialize(CArchive& ar) 点击"保存"，调用流程
+>	vmessGet.exe!CvmessGetDoc::Serialize(CArchive & ar) 行 66	C++
+ 	vmessGet.exe!CDocument::OnSaveDocument(const char * lpszPathName) 行 810	C++
+ 	vmessGet.exe!CDocument::DoSave(const char * lpszPathName, int bReplace) 行 401	C++
+ 	vmessGet.exe!CDocument::DoFileSave() 行 340	C++
+ 	vmessGet.exe!CDocument::OnFileSave() 行 317	C++
+ 	vmessGet.exe!_AfxDispatchCmdMsg(CCmdTarget * pTarget, unsigned int nID, int nCode, void(CCmdTarget::*)() pfn, void * pExtra, unsigned int nSig, AFX_CMDHANDLERINFO * pHandlerInfo) 行 77	C++
+ 	vmessGet.exe!CCmdTarget::OnCmdMsg(unsigned int nID, int nCode, void * pExtra, AFX_CMDHANDLERINFO * pHandlerInfo) 行 372	C++
+ 	vmessGet.exe!CDocument::OnCmdMsg(unsigned int nID, int nCode, void * pExtra, AFX_CMDHANDLERINFO * pHandlerInfo) 行 1012	C++
+ 	vmessGet.exe!CView::OnCmdMsg(unsigned int nID, int nCode, void * pExtra, AFX_CMDHANDLERINFO * pHandlerInfo) 行 172	C++
+ 	vmessGet.exe!CFrameWnd::OnCmdMsg(unsigned int nID, int nCode, void * pExtra, AFX_CMDHANDLERINFO * pHandlerInfo) 行 980	C++
+ 	vmessGet.exe!CWnd::OnCommand(unsigned int wParam, long lParam) 行 2794	C++
+ 	vmessGet.exe!CFrameWnd::OnCommand(unsigned int wParam, long lParam) 行 384	C++
+ 	vmessGet.exe!CWnd::OnWndMsg(unsigned int message, unsigned int wParam, long lParam, long * pResult) 行 2107	C++
+ 	vmessGet.exe!CWnd::WindowProc(unsigned int message, unsigned int wParam, long lParam) 行 2093	C++
+ 	vmessGet.exe!AfxCallWndProc(CWnd * pWnd, HWND__ * hWnd, unsigned int nMsg, unsigned int wParam, long lParam) 行 265	C++
+ 	vmessGet.exe!AfxWndProc(HWND__ * hWnd, unsigned int nMsg, unsigned int wParam, long lParam) 行 418	C++
+
+
