@@ -1,0 +1,40 @@
+HMAC算法的典型应用
+
+HMAC算法的一个典型应用是用在“挑战/响应”（Challenge/Response）身份认证中，认证流程如下：
+
+(1) 先由客户端向服务器发出一个验证请求。
+
+(2) 服务器接到此请求后生成一个随机数并通过网络传输给客户端（此为挑战）。
+
+(3) 客户端将收到的随机数与自己的密钥进行HMAC-SHA1运算并得到一个结果作为认证证据传给服务器（此为响应）。
+
+(4) 与此同时，服务器也使用该随机数与存储在服务器数据库中的该客户密钥进行HMAC-SHA1运算，如果服务器的运算结果与客户端传回的响应结果相同，则认为客户端是一个合法用户 。
+HMAC算法的安全性
+
+HMAC算法引入了密钥，其安全性已经不完全依赖于所使用的HASH算法，安全性主要有以下几点保证：
+
+（1）使用的密钥是双方事先约定的，第三方不可能知道。由上面介绍应用流程可以看出，作为非法截获信息的第三方，能够得到的信息只有作为“挑战”的随机数和作为“响应”的HMAC结果，无法根据这两个数据推算出密钥。由于不知道密钥，所以无法仿造出一致的响应。
+
+（2）在HMAC算法的应用中，第三方不可能事先知道输出（如果知道，不用构造输入，直接将输出送给服务器即可）。
+
+（3） HMAC算法与一般的加密重要的区别在于它具有“瞬时”性，即认证只在当时有效，而加密算法被破解后，以前的加密结果就可能被解密。
+
+
+
+HMAC算法的伪码实现
+    function hmac (key, message) {
+	if (length(key) > blocksize) {
+	  key = hash(key) // keys longer than blocksize are shortened
+	}
+	if (length(key) < blocksize) {
+	  // keys shorter than blocksize are zero-padded (where ∥ is concatenation)
+	  key = key ∥ [ 0x00 * (blocksize - length(key))] // Where * is repetition.
+	}
+	o_pad = [ 0x5c * blocksize] // Where blocksize is that of the underlying hash function
+	i_pad = [ 0x36 * blocksize]
+	o_key_pad = o_pad ⊕ key // Where ⊕ is exclusive or (XOR)
+	i_key_pad = i_pad ⊕ key
+	return hash(o_key_pad ∥ hash(i_key_pad ∥ message)) // Where ∥ is concatenation
+    }
+
+
