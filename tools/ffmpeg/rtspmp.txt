@@ -1,0 +1,49 @@
+，RTMP协议
+（1）是流媒体协议。
+（2）RTMP协议是 Adobe 的私有协议，未完全公开。
+（3）RTMP协议一般传输的是 flv，f4v 格式流。
+（4）RTMP一般在 TCP 1个通道上传输命令和数据。
+ 
+2，RTSP协议
+（1）是流媒体协议。
+（2）RTSP协议是共有协议，并有专门机构做维护。.
+（3）RTSP协议一般传输的是 ts、mp4 格式的流。
+（4）RTSP传输一般需要 2-3 个通道，命令和数据通道分离。
+ 
+3，HTTP协议
+（1）不是是流媒体协议。
+
+（2）HTTP协议是共有协议，并有专门机构做维护。 
+（3）HTTP协议没有特定的传输流。 
+（4）HTTP传输一般需要 2-3 个通道，命令和数据通道分离。
+ 
+
+
+可用的测试视频流（2019.07更新）：
+
+    美国中文电视 ：rtmp://media3.sinovision.net:1935/live/livestream (720*406)
+    耀才证券 ： rtmp://202.69.69.180:443/webcast/bshdlive-pc
+    香港卫视 : rtmp://live.hkstv.hk.lxdns.com/live/hks1
+    湖南卫视 : rtmp://58.200.131.2:1935/livetv/hunantv
+    美国1 : rtmp://ns8.indexforce.com/home/mystream
+    韩国GoodTV :  rtmp://mobliestream.c3tv.com:554/live/goodtv.sdp
+    广东卫视：rtmp://58.200.131.2:1935/livetv/gdtv
+    东方卫视：rtmp://58.200.131.2:1935/livetv/dftv
+
+
+
+1，RTMP协议直播源
+香港卫视：rtmp://live.hkstv.hk.lxdns.com/live/hks
+ 
+2，RTSP协议直播源
+珠海过澳门大厅摄像头监控：rtsp://218.204.223.237:554/live/1/66251FC11353191F/e7ooqwcfbqjoo80j.sdp
+大熊兔（点播）：rtsp://184.72.239.149/vod/mp4://BigBuckBunny_175k.mov
+ 
+3，HTTP协议直播源
+香港卫视：http://live.hkstv.hk.lxdns.com/live/hks/playlist.m3u8
+CCTV1高清：http://ivi.bupt.edu.cn/hls/cctv1hd.m3u8
+CCTV3高清：http://ivi.bupt.edu.cn/hls/cctv3hd.m3u8
+CCTV5高清：http://ivi.bupt.edu.cn/hls/cctv5hd.m3u8
+CCTV5+高清：http://ivi.bupt.edu.cn/hls/cctv5phd.m3u8
+CCTV6高清：http://ivi.bupt.edu.cn/hls/cctv6hd.m3u8
+苹果提供的测试源（点播）：http://devimages.apple.com.edgekey.net/streaming/examples/bipbop_4x3/gear2/prog_index.m3u8
