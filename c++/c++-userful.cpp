@@ -29,4 +29,17 @@ static std::string fmt(const char *pszFmt, ...)
 #endif
 }
 
+//vs 不定参printf
+static int default_error_callback(const char *format, ...)
+{
+  int ret;
+  va_list argptr;
+  va_start(argptr, format);
+  ret = vfprintf(stderr, format, argptr);
+  va_end(argptr);
+  return ret;
+}
+
+
+
 
