@@ -1,3 +1,34 @@
+Go项目构建及编译
+	一个Go工程中主要包含以下三个目录：
+		src：源代码文件
+		pkg：包文件
+		bin：相关bin文件
+
+	golang 的所有文件都需要指定其所在的包（package），包有两种类型，一种是 main 包，使用 package main 在代码的最前面声明。另外一种就是 非main 包，使用 package + 包名 。main 包的可以有唯一的一个 main 函数，这个函数也是程序的入口。也只有 main 包可以编译成可执行的文件。
+
+
+	包名和文件名没有直接关系。
+
+	一个包可以分散在不同的同级文件里(包名冲突可以使用import 重命名)，只要都声明为一个包名即可。
+	
+	go1.12 引入了 go Module，即 go 的软件包都可以声明为 module。
+
+	
+分号将被自动插入到标记流中非空白行的末尾:
+	当输入被断开为标记时，如果行末标记为:
+		a. 一个标识符
+		b. 一个整数、浮点数、虚数、字符或字符串文字
+		c. 关键字break、continue、fallthrough或return中的一个
+		d. 运算符和分隔符++、--、)、]或}中的一个
+        
+golang的命名规范及大小写的访问权限
+	1、golang的命名推荐使用驼峰命名法，必须以一个字母（Unicode字母）或下划线开头，后面可以跟任意数量的字母、数字或下划线。
+	2、golang中根据首字母的大小写来确定可以访问的权限。无论是方法名、常量、变量名还是结构体的名称，如果首字母大写，则可以被其他的包访问；如果首字母小写，则只能在本包中使用
+	可以简单的理解成，首字母大写是公有的，首字母小写是私有的
+	3、结构体中属性名的大写
+	
+	
+	
 eclipse download:
 	https://golang.google.cn/dl/
 		go1.8.2.windows-amd64.zip
@@ -28,10 +59,22 @@ eclipse download:
 
 
 
-
-		
+Golang Package 与 Module 简介
+		https://www.jianshu.com/p/07ffc5827b26
 	
 
+深入理解 go build 和 go install
+	1.作用
+		go build：用于测试编译包，在项目目录下生成可执行文件（有main包）。
+		go install：主要用来生成库和工具。一是编译包文件（无main包），将编译后的包文件放到 pkg 目录下（$GOPATH/pkg）。二是编译生成可执行文件（有main包），将可执行文件放到 bin 目录（$GOPATH/bin）。
+	2. 相同点
+		都能生成可执行文件
+	3. 不同点
+		go build 不能生成包文件, go install 可以生成包文件
+		go build 生成可执行文件在当前目录下， go install 生成可执行文件在bin目录下（$GOPATH/bin）
+
+
+	
 
 Go语言变量的声明（使用var关键字）
 
