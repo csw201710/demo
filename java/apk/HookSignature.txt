@@ -1,0 +1,41 @@
+apk 过签名
+	public class HookPackageManager extends PackageManager {
+	  
+		private PackageManager mBase; //用来做适配，返回其他信息
+	  
+		public HookPackageManager(PackageManager base) {
+			mBase = base;
+		}
+	  
+		@Override
+		public PackageInfo getPackageInfo(String packageName, int flags)
+				throws NameNotFoundException {
+			if (!"ywt.android.test6".equals(packageName)) {
+				//如果不是目标APK，则返回原始数据
+				return mBase.getPackageInfo(packageName, flags);
+			}
+			PackageInfo pkgInfo = new PackageInfo();
+			pkgInfo.signatures = new Signature[] {
+				new Signature(new byte[] {
+					//这是填写原始APK中读到的签名，用来欺骗so，很长就不贴了，后面会给出APK，反编译看即可。
+				})
+			};
+			return pkgInfo;
+		}
+	  
+		//下面还有很多需要implements的方法，太多了，就不写了，后面会给出APK，反编译看即可，只要用mBase一一调用返回即可。
+	}
+
+
+
+
+	public class HookMainActivity extends Activity {
+	  
+		@Override
+		public PackageManager getPackageManager() {
+			//由于调用的是this.getPackageManager()，所以只要重写getPackageManager，返回一个伪造的实例，就可以实现欺骗
+			PackageManager pm = new HookPackageManager(super.getPackageManager());
+			return pm;
+		}
+	}
+
