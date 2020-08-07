@@ -1,0 +1,51 @@
+// chmod u+s [processName]
+int call_changeHWSysTime()
+{
+	int ret = 0;
+   int    status;
+   pid_t pid;
+  
+  
+    printf("getuid(): %d geteuid(): %d getgid(): %d getegid(): %d\n", getuid(), geteuid(), getgid(), getegid());
+    if ((pid = fork()) < 0)
+    {
+      return -1;
+    }     
+    else if (pid == 0)
+    { 
+      
+      //子进程 
+      setuid(geteuid()); //提升权限
+	  seteuid(getuid());//降低权限
+      printf("[child] getuid(): %d geteuid(): %d getgid(): %d getegid(): %d\n", getuid(), geteuid(), getgid(), getegid());
+      execlp("clock", "clock","-w", 0);
+      _exit(127);
+    }else{
+      if(waitpid(pid, &status, 0) < 0)
+      {
+        printf("waitpid failed\n");
+        goto err;
+      }  
+    }
+    
+    
+    if (WIFEXITED(status)) {
+       printf("exited, status=%d\n", WEXITSTATUS(status));
+       if( WEXITSTATUS(status) == 0){
+          ret = 0;
+          goto err;
+       }
+    } else if (WIFSIGNALED(status)) {
+       printf("killed by signal %d\n", WTERMSIG(status));
+    } else if (WIFSTOPPED(status)) {
+       printf("stopped by signal %d\n", WSTOPSIG(status));
+    } else if (WIFCONTINUED(status)) {
+       printf("continued\n");
+    }
+    ret = -1;
+    
+
+err:
+  return ret;
+}
+
