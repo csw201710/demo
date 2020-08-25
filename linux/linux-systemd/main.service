@@ -1,0 +1,29 @@
+自定义服务:
+	启动: systemctl start main
+	停止: systemctl stop main
+
+	cat /usr/lib/systemd/system/main.service
+		[Unit]
+		Description=this is a test service 
+		After=network.target
+
+		[Service]
+		ExecStart=/root/test/t1/main
+
+		[Install]
+		WantedBy=multi-user.target
+
+
+
+	cat /usr/lib/systemd/system/main.service
+		[Unit]
+		Description=this is a test service 
+		After=network.target
+
+		[Service]
+		Type=fork
+		# 程序中需要调用daemon功能
+		ExecStart=/root/test/t1/main  
+
+		[Install]
+		WantedBy=multi-user.target
