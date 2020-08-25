@@ -1,0 +1,10 @@
+[Unit]
+Description=Shadowsocks
+
+[Service]
+TimeoutStartSec=0
+ExecStart=/usr/local/bin/ssserver -c /opt/shadowsocks.json
+
+[Install]
+WantedBy=multi-user.target
+
