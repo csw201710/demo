@@ -1,0 +1,107 @@
+find_package
+	find_package用于加载第三方库，可以将需要的部分指定为组件，例如使用包nodelet:
+	find_package(catkin REQUIRED COMPONENTS nodelet)。例如，使用Boost时加载线程组件:
+
+		find_package(Boost REQUIRED COMPONENTS thread)
+
+	使用Find_Package寻找模块时，每一个模块都会产生如下变量：
+
+		_FOUND
+		_INCLUDE_DIR
+		_LIBRARY or _LIBRARIES
+
+	如果_FOUND为真，需要把_INCLUDE_DIR加入到INCLUDE_DIRECTORIES中，_LIBRARY加入到TARGET_LINK_LIBRARIES中。
+	
+	module 模式
+
+		find_package将先到module路径下查找 Find<name>.cmake。首先它搜索 ${CMAKE_MODULE_PATH}中的所有路径，然后搜索 /usr/share/cmake-3.5/Modules．比如find_package(Boost)搜索的文件是/usr/share/cmake-3.5/Modules/FindBoost.cmake
+
+		如果在CMakeLists.txt中没有下面的指令：
+
+			set(CMAKE_MODULE_PATH  "Findxxx.cmake文件所在的路径")
+
+		那么cmake不会搜索CMAKE_MODULE_PATH指定的路径，此时cmake会搜索第二优先级的路径．
+		
+		
+	config 模式
+
+		如果按照module模式未找到，cmake将会查找 <Name>Config.cmake 或 <lower-case-name>-config.cmake 文件。cmake会优先搜索xxx_DIR 指定的路径。如果在CMakeLists中没有下面的指令:
+
+			set(xxx_DIR  "xxxConfig.cmkae文件所在的路径")
+
+		那么cmake就不会搜索xxx_DIR指定的路径．而是到/usr/local/lib/cmake/xxx/中搜索．比如/usr/local/lib/cmake/yaml-cpp/yaml-cpp-config.cmake
+
+		对于catkin_make，它会搜索ROS Package的安装目录，比如std_msgs对应的文件路径在/opt/ros/kinetic/share/std_msgs/cmake/std_msgsConfig.cmake．这两个文件是库文件安装时自己安装的，将自己的路径硬编码到其中。
+
+		cmake找到任意一个之后就会执行这个文件，然后这个文件执行后就会设置好一些cmake变量。比如下面的变量（NAME表示库的名字，比如可以用Opencv 代表Opencv库）:
+
+			<NAME>_FOUND	# 布尔量
+			<NAME>_INCLUDE_DIRS   or   <NAME>_INCLUDES
+			<NAME>_LIBRARIES   or   <NAME>_LIBRARIES   or    <NAME>_LIBS
+			<NAME>_DEFINITIONS
+
+		我们可以在CMakeList中用下面代码检验find_package的结果：
+
+			find_package(but_velodyne  REQUIRED)
+			if (but_velodyne_FOUND)
+			  MESSAGE (STATUS   "definitions:      ${ButVELODYNE_DEFINITIONS}")
+			  MESSAGE (STATUS   "include dirs:    ${ButVELODYNE_INCLUDE_DIRS}")
+			  MESSAGE (STATUS   "lib dirs:     ${ButVELODYNE_LIBRARY_DIRS}")
+
+			  include_directories(${ButVELODYNE_INCLUDE_DIRS})
+			  target_link_libraries (helloworld ${ButVELODYNE_LIBRARY_DIRS})
+			else()
+			  MESSAGE (STATUS " but_velodyne   not found")
+			endif(but_velodyne_FOUND)
+
+		如果cmake在两种模式提供的路径中没有找到对应的Findxxx.cmake和xxxConfig.cmake文件，此时系统就会提示最上面的那些错误信息。
+		
+	
+
+	
+	
+	
+pkg_check_modules
+
+	pkg_check_modules是 CMake 自己的 pkg-config 模块的一个用来简化的封装：你不用再检查 CMake 的版本，加载合适的模块，检查是否被加载，等等，参数和传给 find_package 的一样：先是待返回变量的前缀，然后是包名（pkg-config 的）。这样就定义了<prefix>_INCLUDE_DIRS和其他的这类变量，后续的用法就与find_package一致。
+
+	当安装某些库时（例如从RPM，deb或其他二进制包管理系统），会包括一个后缀名为 pc 的文件，它会放入某个文件夹下(依赖于系统设置，例如，Linux 为该库文件所在文件夹/lib/pkgconfig)，并把该子文件夹加入pkg-config的环境变量PKG_CONFIG_PATH作为搜索路径。
+	pkg_check_modules实质上是检测系统中的 pkg-config 是否存在指定的 .pc 文件。
+
+	在我的电脑上执行echo $PKG_CONFIG_PATH，结果是：
+
+		/home/user/Robot/workspace/devel/lib/pkgconfig:/opt/ros/kinetic/lib/pkgconfig:/opt/ros/kinetic/lib/x86_64-linux-gnu/pkgconfig
+
+	在bash.rc里没有设置，但是能获得这个环境变量，这是因为我们的环境变量里设置了
+
+		source /opt/ros/kinetic/setup.bash
+		source /home/user/Robot/workspace/devel/setup.bash
+
+
+	在cmake中使用`pkg_check_modules`时，就会去上面的路径里搜索pc文件，例如
+
+		# bfl (Bayesian Filtering Library)是一个使用pkg-config的第三方库
+		# 先搜索cmake自己的PkgConfig模块，才能使用pkg_check_modules
+		find_package(PkgConfig)
+		pkg_check_modules(BFL REQUIRED orocos-bfl)
+
+	其中PkgConfig的路径在/opt/ros/kinetic/share/ros/core/rosbuild/FindPkgConfig.cmake
+
+	搜索对应库文件，发现在以下路径：
+
+		/opt/ros/kinetic/lib/liborocos-bfl.so
+		/opt/ros/kinetic/lib/pkgconfig/orocos-bfl.pc
+
+	现在我们可以获得对应的宏，使用这个库了：
+
+		include_directories(${BFL_INCLUDE_DIRS})
+		link_directories(${BFL_LIBRARY_DIRS})
+	
+	
+	
+	
+	
+	
+	
+	
+
