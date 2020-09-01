@@ -1,0 +1,33 @@
+--system
+    将命令发向系统总线，也可使用--session
+--print-reply
+    打印返回结果
+--dest=org.bluez
+    服务名。用户可以用查询命令获得当前系统的所有服务名
+
+	
+  调用远程方法的一般形式是：
+$ dbus-send [--system | --session] --type=method_call --print-reply --dest=连接名 对象路径 接口名.方法名 参数类型:参数值 参数类型:参数值
+dbus-send支持的参数类型包括：string, int32, uint32, double, byte, boolean。
+
+	
+	
+查看system bus上面挂载的services
+	dbus-send --system --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.ListActivatableNames
+
+查看session bus上面挂载的services	
+	dbus-send --session --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.ListActivatableNames
+
+dbus的基本服务
+	dbus-send --system --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.Introspectable.Introspect 
+	
+查看dbus服务的进程id	
+	dbus-send --system --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.GetConnectionUnixProcessID string:"com.deepin.daemon.Apps" 
+	
+查看dbus服务名称
+	cat /proc/`dbus-send --system --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.GetConnectionUnixProcessID string:"com.deepin.daemon.Apps" | tail -n 1 | awk '{print $2}'`/cmdline && echo
+	
+
+
+
+
