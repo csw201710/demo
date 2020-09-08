@@ -26,7 +26,7 @@ static std::string __format(const char *fmtTemplate, ...)
 
 
 static std::string getSelfPath(){
-  char current_absolute_path[256];
+  char current_absolute_path[256] = {0};
   //获取当前程序绝对路径
   int cnt = readlink("/proc/self/exe", current_absolute_path, sizeof(current_absolute_path));
   if (cnt < 0 || cnt >= sizeof(current_absolute_path))
@@ -38,7 +38,7 @@ static std::string getSelfPath(){
 }
 
 static std::string getExeName(){
-  char current_absolute_path[256];
+  char current_absolute_path[256] = {0};
   //获取当前程序绝对路径
   int cnt = readlink("/proc/self/exe", current_absolute_path, sizeof(current_absolute_path));
   if (cnt < 0 || cnt >= sizeof(current_absolute_path))
@@ -57,7 +57,7 @@ static std::string getExeName(){
         break;
     }
   }
-  return current_absolute_path + i+1;
+  return current_absolute_path + i + 1;
   
 }
 
@@ -179,8 +179,11 @@ static void mointer(int argc, char* argv[])
             //child
             seteuid(getuid());
             std::string cmd = __format("%s" ,getSelfPath().c_str());
+            const char* _cmd = cmd.c_str();
+            std::string exe = getExeName();
+            const char* _exe = exe.c_str();
             //子进程 
-            execl(cmd.c_str(), getExeName().c_str(), "--has-mointor-child", (char *)0);
+            execl(_cmd, _exe, "--has-mointor-child", (char *)0);
             _exit(127);
         }else{
             if(waitpid(pid, &status, 0) < 0)
@@ -218,8 +221,11 @@ int main(int argc, char* argv[]){
 	for(int i=1;i++;){
 	    printf("child run [%d]\n",i);
 	    sleep(2);
+	    char *p = 0;
+	    //*p = 0;
 	}
 	return 0;
 }
+
 
 
