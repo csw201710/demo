@@ -147,7 +147,7 @@ err:
 static int proc_detect()
 {
     char filename[100] = {0};
-    std::string proc = getExeName();;
+    std::string proc = getSelfPath();;
     sprintf(filename, "%s.pid", proc.c_str());
     
     int fd = open(filename, O_RDWR | O_CREAT, (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH));
@@ -183,11 +183,13 @@ static void mointer(int argc, char* argv[])
 {
     int ret = 0;
     int is_mointor = -1;
-    char short_opts[] = "";
+    int is_daemon = -1;
+    char short_opts[] = "d";
     int option_index = 0;
     int opt;
     struct option long_opts[] = {
         {"has-mointor-child", no_argument, 0, 0},
+        {"daemon", no_argument, 0, 'd'},
         {NULL, 0, NULL, 0}
     };
     
@@ -201,13 +203,22 @@ static void mointer(int argc, char* argv[])
                     is_mointor = 1;
                 }
                 break;
+            case 'd':
+                is_daemon = 1;
             }
     }
-    
     if (is_mointor == 1){
         printf(" hash mointor !!!!!\n");
         return ;
     }
+    if(is_daemon == 1){
+        if(daemon(0,1)  == -1){
+            perror("daemon failed");
+            exit(0);
+        }   
+        printf("start with daemon\n");
+    }
+
     while(1){
         int    status = 0;
         pid_t pid;
@@ -219,7 +230,7 @@ static void mointer(int argc, char* argv[])
         }     
         else if (pid == 0)
         { 
-             int ret = proc_detect();
+             ret = proc_detect();
             	if(ret != 0){
             	    exit(110);
             	}
@@ -282,5 +293,6 @@ int main(int argc, char* argv[]){
 	}
 	return 0;
 }
+
 
 
