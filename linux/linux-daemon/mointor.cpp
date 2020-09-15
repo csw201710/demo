@@ -7,7 +7,15 @@
 #include<sys/types.h>
 #include<sys/wait.h>
 #include <stdarg.h>
-#include <getopt.h>  
+#include <getopt.h>
+
+
+
+#include <unistd.h>
+#include <errno.h>
+#include <sys/file.h>
+
+  
 static std::string __format(const char *fmtTemplate, ...)
 {
   va_list ap;
@@ -136,6 +144,41 @@ err:
 }
 
 
+static int proc_detect()
+{
+    char filename[100] = {0};
+    std::string proc = getExeName();;
+    sprintf(filename, "%s.pid", proc.c_str());
+    
+    int fd = open(filename, O_RDWR | O_CREAT, (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH));
+    if (fd < 0) {
+        printf("open file \"%s\" failed!!!\n", filename);
+        return 1;
+    }
+
+    struct flock fl;
+    fl.l_type = F_WRLCK;
+    fl.l_start = 0;
+    fl.l_whence = SEEK_SET;
+    fl.l_len = 0;
+
+    int ret = fcntl(fd, F_SETLK, &fl);
+    if (-1 == ret) {
+        printf("file \"%s\" locked. proc already exit!!!\n", filename);
+        close(fd);
+        return 1;
+    } else {
+        ftruncate(fd, 0);
+        char buf[16];
+        sprintf(buf, "%ld", (long)getpid());
+        write(fd, buf, strlen(buf) + 1);
+        //do not close file
+        return 0;
+    }
+}
+
+
+
 static void mointer(int argc, char* argv[])
 {
     int ret = 0;
@@ -166,7 +209,7 @@ static void mointer(int argc, char* argv[])
         return ;
     }
     while(1){
-        int    status;
+        int    status = 0;
         pid_t pid;
 
         if ((pid = fork()) < 0)
@@ -176,6 +219,10 @@ static void mointer(int argc, char* argv[])
         }     
         else if (pid == 0)
         { 
+             int ret = proc_detect();
+            	if(ret != 0){
+            	    exit(110);
+            	}
             //child
             seteuid(getuid());
             std::string cmd = __format("%s" ,getSelfPath().c_str());
@@ -197,6 +244,10 @@ static void mointer(int argc, char* argv[])
                         // process normal exist
                         printf("process normal exist\n");
                     }
+                    if(WEXITSTATUS(status) == 110){
+                        printf("process has run! break\n");
+                        break;
+                    }
                 } else if (WIFSIGNALED(status)) {
                     printf("killed by signal %d\n", WTERMSIG(status));
                 } else if (WIFSTOPPED(status)) {
@@ -215,6 +266,11 @@ static void mointer(int argc, char* argv[])
 }
 
 
+
+
+
+
+
 int main(int argc, char* argv[]){
 	mointer(argc, argv);
 	
@@ -226,6 +282,5 @@ int main(int argc, char* argv[]){
 	}
 	return 0;
 }
-
 
 
