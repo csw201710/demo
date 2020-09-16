@@ -1,0 +1,128 @@
+#include <openssl/sm2.h>
+
+EC_KEY * prikeyTOEC_KEY(unsigned char * prikey, int len)
+{
+        int ret = -1;
+        BIGNUM *d = NULL;
+        EC_KEY *ec_key = 0;
+        ec_key = EC_KEY_new_by_curve_name(NID_sm2p256v1);
+        if (ec_key == 0) {
+                printf("EC_KEY_new_by_curve_name failed,%s\n ", ERR_error_string(ERR_get_error(), 0));
+                goto end;
+        }
+        int BitLen = EC_GROUP_get_degree(EC_KEY_get0_group(ec_key));
+        if (len != 32) {
+                printf("pri key is invalid\n");
+                goto end;
+        }
+        if (!(d = BN_bin2bn(prikey, len, NULL))) {
+                printf("BN_bin2bn failed,%s\n ", ERR_error_string(ERR_get_error(), 0));
+                goto end;
+        }
+
+        if (!EC_KEY_set_private_key(ec_key, d)) {
+                printf("EC_KEY_set_private_key  failed,%s\n ", ERR_error_string(ERR_get_error(), 0));
+                goto end;
+        }
+        ret = 0;
+end:
+        BN_clear_free(d);
+        if (ret == 0) {
+                return ec_key;
+        }
+        EC_KEY_free(ec_key);
+        return 0;
+
+}
+
+int _decrypt(EC_KEY *ec_key, std::string & data, std::string & decrypt)
+{
+        const unsigned char* inData = (const unsigned char*)data.data();
+        size_t inDataLen = data.length();
+        unsigned char* p;
+        int ret;
+    
+        unsigned char *out;
+        size_t outlen = 0;
+
+ 
+
+        ret = SM2_decrypt(NID_sm3, inData, inDataLen, 0, &outlen, ec_key);
+        if (ret != 1) {
+                printf("SM2_decrypt failed,%s\n ", ERR_error_string(ERR_get_error(), 0));
+                return -1;
+        }
+
+        out = (unsigned char*)calloc(outlen, sizeof(char));
+        if (out == 0) { printf("calloc failed"); return -1; }
+
+
+        ret = SM2_decrypt(NID_sm3, inData, inDataLen, out, &outlen, ec_key);
+        if (ret != 1) {
+                printf("SM2_decrypt failed,%s\n ", ERR_error_string(ERR_get_error(), 0));
+                free(out);
+                return -1;
+        }
+
+        decrypt.clear();
+        decrypt.append((char*)out, outlen);
+        free(out);
+        return 0;
+}
+
+
+
+
+#include <openssl/gmapi.h>
+
+
+
+typedef struct ECCrefEnvelopedKey_st
+{
+	unsigned int version;             //   	当前版本为1，此处填写1；
+	unsigned int ulSymmAlgID;     	// 	对称算法标识，限定ECB模式
+	unsigned int ulBits;              //  	密钥对的密钥位长度
+	unsigned char encryptedPriKey[64];  //	密钥对私钥的密文
+	ECCrefPublicKey pubKey;           //	密钥对的公钥
+	ECCCipher pairCipher;              //	用保护公钥加密的对称密钥密文。
+} ECCEnvelopedKey;
+
+//ECCChiper ecc prikey decrypt
+int main(int argc, char *argv[]){
+	unsigned char base64[]="";
+	char out[1024];
+	int outLen =1024;
+
+	//showPubKeyFromX509();
+	//GetCertOrg(s_cert,sizeof(s_cert),out,sizeof(out));
+	base64_decode((unsigned char *)out,&outLen,(unsigned char *)base64,strlen((char*)base64));
+	
+	print_arr("decode data", ( unsigned char*)out, outLen);
+	
+	//WriteToFile(out,outLen);
+	
+#if 1
+	{
+		printf("ECCEnvelopedKey: %d\n", sizeof(ECCEnvelopedKey));
+		char PrivateKeyDerBuf[32]={ };
+		EC_KEY * ec_key = prikeyTOEC_KEY((unsigned char*)PrivateKeyDerBuf, 32);
+		std::string encData,decData;
+		ECCEnvelopedKey * k = (ECCEnvelopedKey*)out;
+		unsigned char buf[4096] = {0};
+		unsigned char *p = (unsigned char*)buf;
+		int bufLen = i2d_ECCCipher(&k->pairCipher,&p);
+
+		encData.append((char*)buf, bufLen);
+		int ret = _decrypt(ec_key,encData,decData);
+		if(ret != 0){
+			printf("_decrypt failed \n");
+		}
+		print_arr("decrypt data", ( unsigned char*)decData.data(), decData.length());
+	}
+#endif
+
+	return 0;
+
+
+}
+
