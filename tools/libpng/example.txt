@@ -1,0 +1,194 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
+#include <string.h>
+
+#include <png.h>
+
+
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <string.h>
+#include <fcntl.h>
+
+
+void testConvert(const char* src, const char* dst){
+  png_image image;
+  
+  memset(&image, 0, (sizeof image));
+  image.version = PNG_IMAGE_VERSION;
+  if (png_image_begin_read_from_file(&image, src) != 0)
+  {
+     png_bytep buffer;
+
+     image.format = PNG_FORMAT_RGBA;
+
+     buffer = malloc(PNG_IMAGE_SIZE(image));
+     
+     if (buffer != NULL &&
+        png_image_finish_read(&image, NULL/*background*/, buffer,
+            0/*row_stride*/, NULL/*colormap*/) != 0)
+     {
+        printf("image.width: %d\n", image.width);
+        printf("image.height: %d\n", image.height);
+        printf("image.format: %d\n", image.format);
+        unsigned int channels = PNG_IMAGE_PIXEL_CHANNELS(image.format);
+        png_uint_32 png_row_stride = image.width * channels;
+        printf("image.channels: %d\n", channels);
+        printf("image.png_row_stride: %d\n", png_row_stride);
+        
+        for(int i=0;i< image.height;i++){
+            for(int j=0;j < image.width;j++){
+                 unsigned char r = buffer[png_row_stride * i + j*4 + 0];
+                 unsigned char g = buffer[png_row_stride * i + j*4 + 1];
+                 unsigned char b = buffer[png_row_stride * i + j*4 + 2];
+                 unsigned char a = buffer[png_row_stride * i + j*4 + 3];
+                 if(r == 0xff && g == 0xff && b == 0xff){
+                    buffer[png_row_stride * i + j*4 + 3] = 0x00;    
+                 }   
+            }
+        }
+        
+        if (png_image_write_to_file(&image, dst, 0/*convert_to_8bit*/,
+            buffer, 0/*row_stride*/, NULL/*colormap*/) != 0)
+        {
+       
+           exit(0);
+        }
+     }
+     else
+     {
+
+        if (buffer == NULL)
+           png_image_free(&image);
+        else
+           free(buffer);
+    }
+  }
+
+  //fprintf(stderr, "pngtopng: error: %s\n", image.message);
+
+
+}
+
+
+
+
+static size_t readAllData(const char* file, unsigned char** pData){
+    struct stat fileInfo;
+    unsigned char *fileDate = 0;
+    FILE* fp = fopen(file, "rb");
+    if(fp == 0){
+        printf("open failed");
+        return 0;
+    }
+    stat(file,&fileInfo);
+    fileDate=(unsigned char *)malloc(sizeof(char)*(fileInfo.st_size+1));
+    fread(fileDate,sizeof(char),fileInfo.st_size,fp);
+    fclose(fp);
+    (*pData) = fileDate;
+    return fileInfo.st_size;
+}
+
+static void writeAllData(const char* file,unsigned char* data, int dataLen){
+    FILE* fp = fopen(file, "wb");
+    if(fp == 0){
+        printf("failed");
+        exit(-1);
+    }
+    fwrite(data, sizeof(char), dataLen, fp);
+    fclose(fp);
+    
+}
+void testConvert2(const char* inData, size_t inDataLen, unsigned char* outData, size_t* pOutDataLen){
+  png_image image;
+  
+  memset(&image, 0, (sizeof image));
+  image.version = PNG_IMAGE_VERSION;
+  if (png_image_begin_read_from_memory(&image, inData,inDataLen) != 0)
+  {
+     png_bytep buffer;
+
+     image.format = PNG_FORMAT_RGBA;
+
+     buffer = malloc(PNG_IMAGE_SIZE(image));
+     
+     if (buffer != NULL &&
+        png_image_finish_read(&image, NULL/*background*/, buffer,
+            0/*row_stride*/, NULL/*colormap*/) != 0)
+     {
+        printf("image.width: %d\n", image.width);
+        printf("image.height: %d\n", image.height);
+        printf("image.format: %d\n", image.format);
+        unsigned int channels = PNG_IMAGE_PIXEL_CHANNELS(image.format);
+        png_uint_32 png_row_stride = image.width * channels;
+        printf("image.channels: %d\n", channels);
+        printf("image.png_row_stride: %d\n", png_row_stride);
+        
+        for(int i=0;i< image.height;i++){
+            for(int j=0;j < image.width;j++){
+                 unsigned char r = buffer[png_row_stride * i + j*4 + 0];
+                 unsigned char g = buffer[png_row_stride * i + j*4 + 1];
+                 unsigned char b = buffer[png_row_stride * i + j*4 + 2];
+                 unsigned char a = buffer[png_row_stride * i + j*4 + 3];
+                 if(r == 0xff && g == 0xff && b == 0xff){
+                    buffer[png_row_stride * i + j*4 + 3] = 0x00;    
+                 }   
+            }
+        }
+        
+        if (!png_image_write_to_memory(&image, outData, pOutDataLen, 0/*convert_to_8bit*/,
+            buffer, 0/*row_stride*/, NULL/*colormap*/))
+        {
+            printf("png_image_write_to_memory failed");
+           return;
+        }
+     }
+     else
+     {
+
+        if (buffer == NULL)
+           png_image_free(&image);
+        else
+           free(buffer);
+    }
+  }
+
+  
+
+
+}
+
+
+
+int main()
+{
+
+   // testConvert("/home/t/Desktop/m.png", "/home/t/Desktop/m-1.png");
+    
+    unsigned char *inData;
+    unsigned char* outData;
+    size_t inDataLen = 0;
+    size_t outDataLen = 0;
+    inDataLen = readAllData("/home/t/Desktop/m.png", &inData);
+    
+    outDataLen = 50*1024;
+    outData = (unsigned char*) malloc(outDataLen * sizeof(char));
+    if(outData == 0){
+        printf("malloc failed");
+        return -1;
+    }
+    
+    testConvert2(inData,inDataLen, outData,&outDataLen);
+    
+    
+    writeAllData("/home/t/Desktop/m-2.png", outData, outDataLen);
+    
+    free(outData);
+    free(inData);
+    
+    return 0;
+}
+
+
