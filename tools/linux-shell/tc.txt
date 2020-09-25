@@ -1,0 +1,6 @@
+测试网络不稳定命令
+
+在附上TC操作的命令
+	tc qdisc add dev eth0 root netem delay 50ms 30ms loss 5%
+这句的意思是给网卡eth0加上 50ms的延时，± 30ms 的抖动，在加 5%的丢包率
+
