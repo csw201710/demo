@@ -113,3 +113,20 @@ done
 #git submodule update
 
 
+
+# 删除 git 历史记录中的大文件
+# 已测试(ok):
+	从 git 历史中移除
+		git filter-branch --force --index-filter 'git rm -rf --cached --ignore-unmatch 大文件文件名' --prune-empty --tag-name-filter cat -- --all
+	
+	例子:git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch "testFolder/2017-2-5 testFile.md" ' --prune-empty --tag-name-filter cat -- --all
+
+		
+	真正删除
+		rm -rf .git/refs/original/
+		git reflog expire --expire=now --all
+		git gc --prune=now
+		git gc --aggressive --prune=now
+		git push origin master --force
+
+
