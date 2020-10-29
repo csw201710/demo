@@ -1,0 +1,11 @@
+Format: http://dep.debian.net/deps/dep5/
+Upstream-Name: wps-office
+Upstream-Contact: Kingsoft
+Source: http://www.wps.cn/
+
+Files: *
+Copyright: Copyright 1988-2014 Kingsoft Corp.
+License: Proprietary
+ The full text of the license can be found in the file
+ `/opt/kingsoft/wps-office/office6/License.doc'
+ in Simplified Chinese.

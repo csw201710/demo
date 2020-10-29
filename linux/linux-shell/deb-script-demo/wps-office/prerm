@@ -1,0 +1,418 @@
+#!/bin/bash
+
+export XDG_DATA_HOME=${XDG_DATA_HOME:-/usr/share/}
+ksv_xdg_dirs="/usr/share/:$XDG_DATA_DIRS"
+ksv_xdg_dir=
+ksv_def_icon_theme=icons/hicolor
+
+ksv_wps_mimes=('application-wps-office.wps' 'wps-office-wps.png' 'application-wps-office.wpt' 'wps-office-wpt.png')
+ksv_word_mimes=('application-wps-office.doc' 'wps-office-doc.png' 'application-wps-office.dot' 'wps-office-dot.png' 'application-vnd.ms-word' 'wps-office-doc.png' 'application-msword' 'wps-office-doc.png' 'application-msword-template' 'wps-office-dot.png''application-wps-office.docx' 'wps-office-doc.png' 'application-wps-office.dotx' 'wps-office-dot.png' 'vnd.ms-word.document.macroenabled.12' 'wps-office-doc.png' 'vnd.ms-word.template.macroenabled.12' 'wps-office-dot.png')
+ksv_et_mimes=('application-wps-office.et' 'wps-office-et.png' 'application-wps-office.ett' 'wps-office-ett.png')
+ksv_excel_mimes=('application-wps-office.xls' 'wps-office-xls.png' 'application-wps-office.xlt' 'wps-office-xlt.png' 'application-vnd.ms-excel' 'wps-office-xls.png' 'application-msexcel' 'wps-office-xls.png' 'application-wps-office.xlsx' 'wps-office-xls.png' 'application-wps-office.xltx' 'wps-office-xlt.png' 'vnd.ms-excel.sheet.macroenabled.12' 'wps-office-xls.png' 'vnd.ms-excel.template.macroenabled.12' 'wps-office-xlt.png')
+ksv_wpp_mimes=('application-wps-office.dps' 'wps-office-dps.png' 'application-wps-office.dpt' 'wps-office-dpt.png')
+ksv_ppt_mimes=('application-wps-office.ppt' 'wps-office-ppt.png' 'application-wps-office.pot' 'wps-office-pot.png' 'application-vnd.ms-powerpoint' 'wps-office-ppt.png' 'application-vnd.mspowerpoint' 'wps-office-ppt.png' 'application-powerpoint' 'wps-office-ppt.png' 'application-wps-office.pptx' 'wps-office-ppt.png' 'application-wps-office.potx' 'wps-office-pot.png' 'vnd.ms-powerpoint.presentation.macroenabled.12' 'wps-office-ppt.png' 'vnd.ms-powerpoint.template.macroenabled.12' 'wps-office-pot.png')
+
+
+common_word_mimes=('text/rtf' 'application/rtf' 'application/msword' 'application/x-msword' 'application/wordperfect' 'application/vnd.ms-word' 'application/msword-template' 'application/vnd.wordperfect' 'application/vnd.sun.xml.writer' 'application/vnd.sun.xml.writer.global' 'application/vnd.sun.xml.writer.template' 'application/vnd.oasis.opendocument.text' 'application/vnd.oasis.opendocument.text-template' 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 'application/vnd.openxmlformats-officedocument.wordprocessingml.template')
+
+common_ppt_mimes=('application/powerpoint' 'application/mspowerpoint' 'application/x-mspowerpoint' 'application/vnd.mspowerpoint' 'application/vnd.ms-powerpoint' 'application/vnd.sun.xml.impress' 'application/vnd.stardivision.impress' 'application/vnd.sun.xml.impress.template' 'application/vnd.oasis.opendocument.presentation' 'application/vnd.oasis.opendocument.presentation-template' 'application/vnd.openxmlformats-officedocument.presentationml.slide' 'application/vnd.openxmlformats-officedocument.presentationml.template' 'application/vnd.openxmlformats-officedocument.presentationml.slideshow' 'application/vnd.openxmlformats-officedocument.presentationml.presentation')
+
+common_excel_mimes=('text/csv' 'application/xls' 'application/csv' 'text/spreadsheet' 'application/x-123' 'application/x-xls' 'application/excel' 'application/x-oleo' 'application/msexcel' 'application/x-msexcel' 'application/x-ms-excel' 'application/vnd.ms-excel' 'application/x-quattropro' 'application/x-planperfect' 'application/x-dos_ms_excel' 'text/comma-separated-values' 'application/vnd.sun.xml.calc' 'text/x-comma-separated-values' 'application/x-applix-spreadsheet' 'application/tab-separated-values' 'application/vnd.stardivision.calc' 'application/vnd.sun.xml.calc.template' 'application/vnd.oasis.opendocument.spreadsheet' 'application/vnd.oasis.opendocument.spreadsheet-template' 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 'application/vnd.openxmlformats-officedocument.spreadsheetml.template' 'application/vnd.lotus-1-2-3' 'application/x-excel' 'application/x-mps' 'application/x-sc' 'application/x-sylk' 'application/x-xbase' 'text/tab-separated-values' 'zz-application/zz-winassoc-xls')
+
+common_pdf_mimes=('application/pdf' 'application/wps-office.pdf')
+common_ofd_mimes=('application/wps-office.ofd')
+common_flow_mimes=('application/wps-office.pos')
+common_mind_mimes=('application/wps-office.pof')
+
+wps_word_mimes=('application/wps-office.doc' 'application/wps-office.dot' 'application/wps-office.dotx' 'application/wps-office.docx' 'application/wps-office.wps' 'application/wps-office.wpt' 'application/wps-office.wpss' 'application/wps-office.wpso')
+wps_ppt_mimes=('application/wps-office.ppt' 'application/wps-office.pptx' 'application/wps-office.pot' 'application/wps-office.potx' 'application/wps-office.dps' 'application/wps-office.dpt' 'application/wps-office.dpss' 'application/wps-office.dpso')
+wps_excel_mimes=('application/wps-office.xls' 'application/wps-office.xlt' 'application/wps-office.xlsx' 'application/wps-office.xltx' 'application/wps-office.et' 'application/wps-office.ett' 'application/wps-office.ets' 'application/wps-office.eto')
+
+
+function restore_mimeapp_config()
+{
+	mimetype=$1
+	defaulttype=$2
+	configFilePath=$3
+	touch $configFilePath
+	if type python3 >/dev/null 2>&1 ; then
+	python3 - <<END
+import configparser
+section = 'Default Applications'
+inifilepath = '$configFilePath'
+config = configparser.ConfigParser(strict=False)
+config.read(inifilepath)
+allmime = ""
+for indexc in '$mimetype':
+	allmime += indexc
+for onemime in allmime.split(' '):
+	if config.has_section(section):
+		if config.has_option(section,onemime):
+			appstr = config.get(section, onemime)
+			apps = appstr.split(';')
+			appcount = len(apps)
+			if appcount == 1:
+				if apps[0] == '$defaulttype':
+					config.remove_option(section,onemime)
+			else:
+				if '$defaulttype' in apps:
+					apps.remove('$defaulttype')
+				appstr = '++'.join(apps)
+				config[section][onemime] = appstr
+	with open(inifilepath, 'w') as configfile:
+		config.write(configfile, space_around_delimiters=False)
+END
+	elif type python2 >/dev/null 2>&1 ; then
+	python2 - <<END
+import ConfigParser
+section = 'Default Applications'
+inifilepath = '$configFilePath'
+config = ConfigParser.ConfigParser()
+config.read(inifilepath)
+for indexc in '$mimetype':
+	allmime += indexc
+for onemime in allmime.split(' '):
+	if config.has_section(section):
+			if config.has_option(section,onemime):
+					appstr = config.get(section, onemime)
+					apps = appstr.split(';')
+					appcount = len(apps)
+					if appcount == 1:
+							if apps[0] == '$defaulttype':
+									config.remove_option(section,onemime)
+					else:
+							if '$defaulttype' in apps:
+									apps.remove('$defaulttype')
+							appstr = '++'.join(apps)
+							config.set(section, onemime, appstr)
+	with open(inifilepath, 'w') as configfile:
+			config.write(configfile)
+END
+        fi
+}
+
+function ks_init()
+{
+	set -e
+	for i in `echo "${ksv_xdg_dirs}" | sed 's/:/ /g'`
+	do
+		if [ -w ${i}/${ksv_def_icon_theme} ] ; then
+			ksv_xdg_dir="${i}"
+		fi
+	done
+	if [ -f "/usr/bin/setstatus" ]; then
+		setstatus -f exectl off &>/dev/null || true
+	fi
+}
+
+function ks_uninstall_icon()
+{
+	local context=$1
+	shift
+	local mode=$1
+	shift
+
+	local png=
+	local mime=
+	local nextIsPng=0
+	for item in $@
+	do
+		if [ "" = "${item}" ] ; then
+			continue
+		fi
+		if [ ${nextIsPng} -eq 1 ] ; then
+			png=${item}
+			nextIsPng=0
+		else
+			mime=${item}
+			for i in 48 32 22 16; do
+				if [ -e "${ksv_xdg_dir}/${ksv_def_icon_theme}/${i}x${i}/${context}/${png}" ] ; then
+					xdg-icon-resource uninstall --noupdate --mode ${mode} --context ${context} --size ${i} ${mime}
+				fi
+			done
+
+			nextIsPng=1
+		fi
+	done
+}
+
+function ks_prerm_restore_deleted_file()
+{
+	if [ ! -f "/usr/share/mime/packages/wps-office-wps.xml" ]; then 
+		touch /usr/share/mime/packages/custom-wps-office.xml
+	fi
+}
+
+function ks_prerm_uninstall_menu()
+{
+	xdg-mime uninstall --mode system "${ksv_xdg_dir}/mime/packages/custom-wps-office.xml"
+	if [ -f "${ksv_xdg_dir}/applications/wps-office-et.desktop" ] ; then
+		xdg-desktop-menu uninstall --noupdate --mode system "${ksv_xdg_dir}/applications/wps-office-et.desktop"
+		xdg-desktop-menu forceupdate --mode system
+		ks_uninstall_icon "mimetypes" "system" "${ksv_et_mimes[*]}" "${ksv_excel_mimes[*]}"
+		xdg-icon-resource forceupdate --mode system
+	fi
+
+	if [ -f "${ksv_xdg_dir}/applications/wps-office-wpp.desktop" ] ; then
+		xdg-desktop-menu uninstall --noupdate --mode system "${ksv_xdg_dir}/applications/wps-office-wpp.desktop"
+		xdg-desktop-menu forceupdate --mode system
+		ks_uninstall_icon "mimetypes" "system" "${ksv_wpp_mimes[*]}" "${ksv_ppt_mimes[*]}"
+		xdg-icon-resource forceupdate --mode system
+	fi
+
+	if [ -f "${ksv_xdg_dir}/applications/wps-office-wps.desktop" ] ; then
+		xdg-desktop-menu uninstall --noupdate --mode system "${ksv_xdg_dir}/applications/wps-office-wps.desktop"
+		xdg-desktop-menu forceupdate --mode system
+		ks_uninstall_icon "mimetypes" "system" "${ksv_wps_mimes[*]}" "${ksv_word_mimes[*]}"
+		xdg-icon-resource forceupdate --mode system
+	fi
+
+	if [ -f "${ksv_xdg_dir}/applications/wps-office-pdf.desktop" ] ; then
+		xdg-desktop-menu uninstall --noupdate --mode system "${ksv_xdg_dir}/applications/wps-office-pdf.desktop"
+		xdg-desktop-menu forceupdate --mode system
+	fi
+
+	if [ -f "${ksv_xdg_dir}/applications/wps-office-ofd.desktop" ] ; then
+		xdg-desktop-menu uninstall --noupdate --mode system "${ksv_xdg_dir}/applications/wps-office-ofd.desktop"
+		xdg-desktop-menu forceupdate --mode system
+	fi
+	
+	if [ -f "${ksv_xdg_dir}/applications/wps-office-flow.desktop" ] ; then
+		xdg-desktop-menu uninstall --noupdate --mode system "${ksv_xdg_dir}/applications/wps-office-flow.desktop"
+		xdg-desktop-menu forceupdate --mode system
+	fi
+
+	if [ -f "${ksv_xdg_dir}/applications/wps-office-mind.desktop" ] ; then
+		xdg-desktop-menu uninstall --noupdate --mode system "${ksv_xdg_dir}/applications/wps-office-mind.desktop"
+		xdg-desktop-menu forceupdate --mode system
+	fi
+
+	if [ -f "${ksv_xdg_dir}/applications/wps-office-misc.desktop" ] ; then
+		xdg-desktop-menu uninstall --noupdate --mode system "${ksv_xdg_dir}/applications/wps-office-misc.desktop"
+		xdg-desktop-menu forceupdate --mode system
+	fi
+}
+
+# 如果有快速启动后台进程，卸载前杀死，并恢复之前更改的配置
+function ks_prerm_uninstall_wpsdaemon()
+{
+	if [ -f "/usr/bin/quickstartoffice" ]; then
+		if [ -f "/root/.bash_logout" ]; then
+			sed -i '/quickstartoffice/d' /root/.bash_logout
+		fi
+		/usr/bin/quickstartoffice stop
+		killall -9 EverythingDaemon wpsofd &>/dev/null || true
+	else
+		killall wps wpp et promecefpluginhost wpsoffice wpspdf wpsofd parsecloudfiletool wpsflow wpsmind wpsofd &>/dev/null || true
+		sleep 3
+		killall -9 wps wpp et promecefpluginhost wpsoffice wpspdf wpsofd parsecloudfiletool wpsflow wpsmind EverythingDaemon wpsofd &>/dev/null || true
+	fi
+}
+
+function ks_prerm_uninstall_desktop_templates()
+{
+	ks_prerm_uninstall_wpsdaemon
+	gTemplatesName="模板"
+	if [ -d "/root/模板" ]; then
+		gTemplatesName="模板"
+	elif [ -d "/root/Templates" ]; then
+		gTemplatesName="Templates"
+	fi
+
+	gDesktopName="桌面"
+	if [ -d "/root/桌面" ]; then
+		gDesktopName="桌面"
+	elif [ -d "/root/Desktop" ]; then
+		gDesktopName="Desktop"
+	fi
+
+	#desktop
+	rm -rf /root/.kingsoft/office6/cache/*
+	if [ -d "/root/${gDesktopName}" ]; then
+		rm -rf /root/${gDesktopName}/wps-office-wpp.desktop
+		rm -rf /root/${gDesktopName}/wps-office-wps.desktop
+		rm -rf /root/${gDesktopName}/wps-office-et.desktop
+		rm -rf /root/${gDesktopName}/wps-office-pdf.desktop
+		rm -rf /root/${gDesktopName}/wps-office-ofd.desktop
+		rm -rf /root/${gDesktopName}/wps-office-flow.desktop
+		rm -rf /root/${gDesktopName}/wps-office-mind.desktop
+		rm -rf /root/${gDesktopName}/wps-office-prometheus.desktop
+	fi
+
+	for templateName in "/opt/kingsoft/wps-office/templates/"*
+	do
+		rm -rf "/root/${gTemplatesName}/$(basename "$templateName")"
+		rm -rf "/etc/skel/${gTemplatesName}/$(basename "$templateName")"
+	done
+
+
+	#config
+	if [ -f "/root/.config/Kingsoft/Office.conf" ]; then
+		sed -i "/OfdServiceProvider/d" "/root/.config/Kingsoft/Office.conf"
+	fi
+
+	rm -rf "/root/.local/share/Kingsoft/account"
+	rm -rf "/root/.local/share/Kingsoft/WPS Cloud Files"
+
+	for FILENAME in /home/*; do
+
+		if [ -d "${FILENAME}/桌面" ]; then
+			gDesktopName="桌面"
+		elif [ -d "${FILENAME}/Desktop" ]; then
+			gDesktopName="Desktop"
+		fi
+
+		if [ -d "${FILENAME}/模板" ]; then
+			gTemplatesName="模板"
+		elif [ -d "${FILENAME}/Templates" ]; then
+			gTemplatesName="Templates"
+		fi
+
+		rm -rf ${FILENAME}/.kingsoft/office6/cache/*
+
+		#menu
+		if [ -f  "${FILENAME}/.config/menus/applications-merged/wps-office.menu" ]; then
+			rm -rf "${FILENAME}/.config/menus/applications-merged/wps-office.menu"
+		fi
+
+		#desktop
+		if [ -f  "${FILENAME}/${gDesktopName}/wps-office-wpp.desktop" ]; then
+			rm -rf "${FILENAME}/${gDesktopName}/wps-office-wpp.desktop"
+		fi
+
+		if [ -f  "${FILENAME}/${gDesktopName}/wps-office-wps.desktop" ]; then
+			rm -rf "${FILENAME}/${gDesktopName}/wps-office-wps.desktop"
+		fi
+		if [ -f "${FILENAME}/${gDesktopName}/wps-office-et.desktop" ]; then
+			rm -rf "${FILENAME}/${gDesktopName}/wps-office-et.desktop"
+		fi
+		if [ -f "${FILENAME}/${gDesktopName}/wps-office-pdf.desktop" ]; then
+			rm -rf "${FILENAME}/${gDesktopName}/wps-office-pdf.desktop"
+		fi
+		if [ -f "${FILENAME}/${gDesktopName}/wps-office-ofd.desktop" ]; then
+			rm -rf "${FILENAME}/${gDesktopName}/wps-office-ofd.desktop"
+		fi
+		if [ -f "${FILENAME}/${gDesktopName}/wps-office-flow.desktop" ]; then
+			rm -rf "${FILENAME}/${gDesktopName}/wps-office-flow.desktop"
+		fi
+		if [ -f "${FILENAME}/${gDesktopName}/wps-office-mind.desktop" ]; then
+			rm -rf "${FILENAME}/${gDesktopName}/wps-office-mind.desktop"
+		fi
+		rm -rf ${FILENAME}/${gDesktopName}/wps-office-prometheus.desktop	
+		#templates
+		for templateName in "/opt/kingsoft/wps-office/templates/"*
+		do
+			rm -rf "${FILENAME}/${gTemplatesName}/$(basename "$templateName")"
+		done
+
+		#config
+		if [ -f "/${FILENAME}/.config/Kingsoft/Office.conf" ]; then
+			sed -i "/OfdServiceProvider/d" "/${FILENAME}/.config/Kingsoft/Office.conf"
+			sed -i "/^wpsoffice\\\Application%20Settings\\\AppComponentMode=/d" "${FILENAME}/.config/Kingsoft/Office.conf"
+		fi
+		#.local mime
+		if [ -d "${FILENAME}/${gDesktopName}" ]; then
+			if [ -d "${FILENAME}/.config" ]; then
+				restore_mimeapp_config "${common_excel_mimes[*]}" "wps-office-prometheus.desktop" "${FILENAME}/.config/mimeapps.list"
+				restore_mimeapp_config "${wps_excel_mimes[*]}" "wps-office-prometheus.desktop" "${FILENAME}/.config/mimeapps.list"
+				restore_mimeapp_config "${common_ppt_mimes[*]}" "wps-office-prometheus.desktop" "${FILENAME}/.config/mimeapps.list"
+				restore_mimeapp_config "${wps_ppt_mimes[*]}" "wps-office-prometheus.desktop" "${FILENAME}/.config/mimeapps.list"
+				restore_mimeapp_config "${common_word_mimes[*]}" "wps-office-prometheus.desktop" "${FILENAME}/.config/mimeapps.list"
+				restore_mimeapp_config "${wps_word_mimes[*]}" "wps-office-prometheus.desktop" "${FILENAME}/.config/mimeapps.list"
+				restore_mimeapp_config "${common_pdf_mimes[*]}" "wps-office-prometheus.desktop" "${FILENAME}/.config/mimeapps.list"
+				if [ -f "${FILENAME}/${gDesktopName}/wps-office-ofd.desktop" ]; then
+					restore_mimeapp_config "${common_ofd_mimes[*]}" "wps-office-prometheus.desktop" "${FILENAME}/.config/mimeapps.list"
+				fi
+				if [ -f "${FILENAME}/${gDesktopName}/wps-office-flow.desktop" ]; then
+					restore_mimeapp_config "${common_flow_mimes[*]}" "wps-office-prometheus.desktop" "${FILENAME}/.config/mimeapps.list"
+				fi
+				if [ -f "${FILENAME}/${gDesktopName}/wps-office-mind.desktop" ]; then
+					restore_mimeapp_config "${common_mind_mimes[*]}" "wps-office-prometheus.desktop" "${FILENAME}/.config/mimeapps.list"
+				fi
+			fi
+		fi
+
+		rm -rf "${FILENAME}/.local/share/Kingsoft/account"
+		rm -rf "${FILENAME}/.local/share/Kingsoft/WPS Cloud Files"
+	done
+
+	if [ -h "/usr/lib64/mozilla/plugins/libbrowsergrapher.so" ]; then
+		rm -rf "/usr/lib64/mozilla/plugins/libbrowsergrapher.so"
+	fi
+	if [ -f "/usr/lib/x86_64-linux-gnu/caja/extensions-2.0/libwps-print.so" ] ; then
+		rm -rf "/usr/lib/x86_64-linux-gnu/caja/extensions-2.0/libwps-print.so"
+	fi
+	if [ -f "/usr/lib64/caja/extensions-2.0/libwps-print.so" ] ; then
+		rm -rf "/usr/lib64/caja/extensions-2.0/libwps-print.so"
+	fi
+	if [ -f "/usr/lib/aarch64-linux-gnu/caja/extensions-2.0/libwps-print.so" ] ; then
+		rm -rf "/usr/lib/aarch64-linux-gnu/caja/extensions-2.0/libwps-print.so"
+	fi
+	if [ -f "/usr/share/deepin/dde-file-manager/oem-menuextensions/wps-office-print.desktop" ] ; then 
+		rm -rf "/usr/share/deepin/dde-file-manager/oem-menuextensions/wps-office-print.desktop"
+	fi
+}
+
+function ks_prerm_upgrade()
+{
+	#ks_prerm_uninstall_menu
+	:
+}
+
+function ks_prerm_remove()
+{
+	ks_prerm_restore_deleted_file
+	#ks_prerm_uninstall_menu
+	ks_prerm_uninstall_desktop_templates
+	if [ -h '/usr/share/mime/packages/business-office.xml' ]; then
+		rm -rf /usr/share/mime/packages/business-office.xml 
+	fi
+	rm -rf /opt/kingsoft/wps-office/office6/*_extend_api.so
+	for HOMEDIR in /home/*; do
+		rm -f $HOMEDIR/.local/share/Kingsoft/office6\\synccfg\\default\\head\\workarea.cfg
+	done
+}
+
+function ks_update_rm()
+{
+	updatePath="/opt/kingsoft/wps-office/office6/wtool"
+	if [ -e "${updatePath}/wpsupdate" ] ; then
+		${updatePath}/wpsupdate /senduninstallinfo:true >/dev/null 2>&1 || true
+	fi
+}
+
+function ks_allinone_rm()
+{
+	allinonePath="/opt/kingsoft/wps-office/office6/ofdmodule"
+	rm -rf ${allinonePath}/libc++abi.so*
+	rm -rf ${allinonePath}/libc++.so*
+	rm -rf ${allinonePath}/libstdc++.so*
+	rm -rf ${allinonePath}/libgcc_s.so*
+}
+function ks_main()
+{
+	if [ $# -eq 0 ] ; then
+		return;
+	fi
+
+	ks_init
+	case $1 in
+		remove )
+			shift
+			ks_prerm_remove $@
+			;;
+		upgrade )
+			shift
+			ks_prerm_upgrade $@
+			;;
+		failed-upgrade )
+			;;
+	esac
+	ks_update_rm
+	ks_allinone_rm
+}
+
+ks_main $@
+
+
+
