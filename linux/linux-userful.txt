@@ -1,4 +1,4 @@
-动态库，静态库
+1. 动态库，静态库
 	#ifdef __GNUC__ >= 4 // it means the compiler is GCC version 4.0 or later
 		#ifdef FBC_EXPORT
 			#warning "===== dynamic library ====="
@@ -23,12 +23,12 @@
 	}
 	#endif
 
-添加版本信息
+2. 添加版本信息
 	#define VERSION "0.0.2" 
 	#define NAME    "xxxx"
 	printf("%s version: %s (%s, %s)\n", NAME, VERSION, __DATE__, __TIME__);
 
-添加库x.x.x 版本号
+	添加库x.x.x 版本号
 	 gcc -shared  -fPIC   -Wl,-soname,libtest.so.0 -o libtest.so.0 test.cpp 
 	 
 	 soname: 影响一个可执行文件在链接器 ld 加载动态链接库时实际查找的动态库文件名字。
@@ -36,12 +36,12 @@
 	 原因:
 		在链接动态库文件生成可执行文件 main 时，还会将指定的 libxxxx.so 动态库的 SONAME 值写入到 main 可执行文件中
 		
-指定运行时加载路径:
+3. 指定运行时加载路径:
 	-Wl,-rpath=./ 
 		后面也是路径，运行的时候用。这条编译指令会在编译时记录到target文件中，所以编译之后的target文件在执行时会按这里给出的路径去找库文件
 	 
-nm	objdump addr2line
-gcc 
+	nm objdump addr2line
+4. gcc 
 	-Wl,-Bsymbolic // 使用库内符号
 	-Wl,--exclude-libs,ALL 告诉链接器将静态库中的所有符号转换为隐藏
 	-Wl,--as-needed
@@ -61,25 +61,42 @@ gcc
 
 
 
-nm [option(s)] [file(s)]
+5. nm [option(s)] [file(s)]
 
-有用的options:
+	有用的options:
 
-    -A 在每个符号信息的前面打印所在对象文件名称；
-    -C 输出demangle过了的符号名称；
-    -D 打印动态符号；
-    -l 使用对象文件中的调试信息打印出所在源文件及行号；
-    -n 按照地址/符号值来排序；
-    -u 打印出那些未定义的符号；
+    	-A 在每个符号信息的前面打印所在对象文件名称；
+    	-C 输出demangle过了的符号名称；
+    	-D 打印动态符号；
+    	-l 使用对象文件中的调试信息打印出所在源文件及行号；
+    	-n 按照地址/符号值来排序；
+    	-u 打印出那些未定义的符号；
 
-常见的符号类型:
+	常见的符号类型:
 
-    A 该符号的值在今后的链接中将不再改变；
-    B 该符号放在BSS段中，通常是那些未初始化的全局变量；
-    D 该符号放在普通的数据段中，通常是那些已经初始化的全局变量；
-    T 该符号放在代码段中，通常是那些全局非静态函数；
-    U 该符号未定义过，需要自其他对象文件中链接进来；
-    W 未明确指定的弱链接符号；同链接的其他对象文件中有它的定义就用上，否则就用一个系统特别指定的默认值。
+    	A 该符号的值在今后的链接中将不再改变；
+    	B 该符号放在BSS段中，通常是那些未初始化的全局变量；
+    	D 该符号放在普通的数据段中，通常是那些已经初始化的全局变量；
+    	T 该符号放在代码段中，通常是那些全局非静态函数；
+    	U 该符号未定义过，需要自其他对象文件中链接进来；
+    	W 未明确指定的弱链接符号；同链接的其他对象文件中有它的定义就用上，否则就用一个系统特别指定的默认值。
+
+
+
+6. 查看进程启动时间，以及已经过的时间
+	ps -eo pid,lstart,etime,cmd
+		ps -A 显示所有进程。
+		ps -e 此参数的效果和指定"A"参数相同。
+		ps -o 用户自定义格式。
+	
+		CODE        HEADER    DESCRIPTION
+		pid         PID       a number representing the process ID (alias tgid).
+		lstart      STARTED   time the command started.  See also bsdstart, start, start_time, and stime.
+		etime       ELAPSED   elapsed time since the process was started, in the form [[DD-]hh:]mm:ss.
+		cmd         CMD       see args.  (alias args, command)
+		args        COMMAND   command with all its arguments as a string...
+
+
 
 
 
