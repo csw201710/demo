@@ -79,3 +79,135 @@ systemctl status iptables.service
 
 
 
+
+
+
+
+
+
+//=======================================================================================//
+
+	
+		
+route:
+	添加路由
+	route add -net 192.168.0.0/24 gw 192.168.0.1
+	route add -host 192.168.1.1 dev 192.168.0.1
+
+	添加网关：
+		route add default gw 192.168.0.1
+	删除路由
+		route del -net 192.168.0.0/24 gw 192.168.0.1
+		route del -net 224.0.0.0 netmask 240.0.0.0 
+iptables	
+	安装iptables:
+		#先检查是否安装了iptables
+		service iptables status
+		#安装iptables
+		yum install -y iptables
+		#升级iptables
+		yum update iptables 
+		#安装iptables-services
+		yum install iptables-services
+	显示nat规则:
+		iptables -t nat --list -n --line-number -v	
+	删除nat规则
+		iptables  -t nat -D POSTROUTING 1
+
+	查看FORWARD
+		iptables -L FORWARD -v -n --line-number
+
+	开启包转发：
+### Clear Old Rules
+iptables -F
+iptables -X
+iptables -Z
+iptables -t nat -F
+iptables -t nat -X
+iptables -t nat -Z
+
+iptables -A INPUT  -j ACCEPT
+iptables -A OUTPUT  -j ACCEPT
+iptables -A FORWARD  -j ACCEPT
+	
+		iptables -t nat -A POSTROUTING -s 10.0.0.0/24   -o ens33 -j MASQUERADE
+						//iptables -A INPUT -p tcp --dport 1723 -j ACCEPT
+						//iptables -A INPUT -i ens33 -p gre -j ACCEPT
+						//iptables -t nat -A POSTROUTING -o ens33 -j MASQUERADE
+						//iptables -A FORWARD -i ppp0 -o ens33 -j ACCEPT
+						//iptables -A FORWARD -i ens33 -o ppp0 -j ACCEPT		
+		service iptables save && service iptables restart  
+		//保存 重新加载生效
+		
+
+
+
+			-F 	清空规则链 	iptables -F
+			-X  清除预设表filter中使用者自定链中的规则
+			-L 	查看规则链 	iptables -L
+			-A 	追加规则 	iptables -A INPUT
+			-D 	删除规则 	iptables -D INPUT 1
+			-R 	修改规则 	iptable -R INPUT 1 -s 192.168.120.0 -j DROP
+			-I 	在头部插入规则 	iptables -I INPUT 1 --dport 80 -j ACCEPT
+			-L 	查看规则 	iptables -L INPUT
+			-N 	新的规则 	iptables -N allowed
+			-V 	查看iptables版本 	iptables -V
+			-p 	协议（tcp/udp/icmp） 	iptables -A INPUT -p tcp
+			-s 	匹配原地址，加" ! "表示除这个IP外 	iptables -A INPUT -s 192.168.1.1
+			-d 	匹配目的地址 	iptables -A INPUT -d 192.168.12.1
+			--sport 	匹配源端口流入的数据 	iptables -A INPUT -p tcp --sport 22
+			--dport 	匹配目的端口流出的数据 	iptables -A INPUT -p tcp --dport 22
+			-i 	匹配入口网卡流入的数据 	iptables -A INPUT -i eth0
+			-o 	匹配出口网卡流出的数据 	iptables -A FORWARD -o eth0
+			-j 	要进行的处理动作:DROP(丢弃)，REJECT(拒绝)，ACCEPT(接受)，SANT(基于原地址的转换) 	iptable -A INPUT 1 -s 192.168.120.0 -j DROP
+			--to-source 	指定SANT转换后的地址 	iptables -t nat -A POSTROUTING -s 192.168.10.0/24 -j SANT --to-source 172.16.100.1
+			-t 	表名(raw、mangle、nat、filter) 	iptables -t nat
+			-m 	使用扩展模块来进行数据包的匹配(multiport/tcp/state/addrtype) 	iptables -m multiport
+
+		动作说明
+			处理动作除了 ACCEPT、REJECT、DROP、REDIRECT 和 MASQUERADE 以外，还多出 LOG、ULOG、DNAT、SNAT、MIRROR、QUEUE、RETURN、TOS、TTL、MARK 等，其中某些处理动作不会中断过滤程序，某些处理动作则会中断同一规则链的过滤，并依照前述流程继续进行下一个规则链的过滤，一直到堆栈中的规则检查完毕为止。透过这种机制所带来的好处是，我们可以进行复杂、多重的封包过滤，简单的说，iptables 可以进行纵横交错式的过滤（tables）而非链状过滤（chains）。
+			动作 	说明 	示例
+			ACCEPT 	将封包放行，进行完此处理动作后，将不再比对其它规则，直接跳往下一个规则链（nat:postrouting） 	
+			REJECT 	拦阻该封包，并传送封包通知对方，可以传送的封包有几个选择：ICMP port-unreachable、ICMP echo-reply 或是 tcp-reset（这个封包会要求对方关闭联机），进行完此处理动作后，将不再比对其它规则，直接 中断过滤程序。 	iptables -A FORWARD -p TCP --dport 22 -j REJECT --reject-with tcp-reset
+			DROP 	丢弃封包不予处理，进行完此处理动作后，将不再比对其它规则，直接中断过滤程序。 	
+			REDIRECT 	将封包重新导向到另一个端口（PNAT），进行完此处理动作后，将 会继续比对其它规则。 这个功能可以用来实作通透式 porxy 或用来保护 web 服务器。 	iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 8080
+			MASQUERADE 	改写封包来源 IP 为防火墙 NIC IP，可以指定 port 对应的范围，进行完此处理动作后，直接跳往下一个规则炼（mangle:postrouting）。这个功能与 SNAT 略有不同，当进行 IP 伪装时，不需指定要伪装成哪个 IP，IP 会从网卡直接读取，当使用拨接连线时，IP 通常是由 ISP 公司的 DHCP 服务器指派的，这个时候 MASQUERADE 特别有用。 	iptables -t nat -A POSTROUTING -p TCP -j MASQUERADE --to-ports 1024-31000
+			LOG 	将封包相关讯息纪录在 /var/log 中，详细位置请查阅 /etc/syslog.conf 组态档，进行完此处理动作后，将会继续比对其它规则。 	iptables -A INPUT -p tcp -j LOG --log-prefix "INPUT packets"
+			SNAT 	改写封包来源 IP 为某特定 IP 或 IP 范围，可以指定 port 对应的范围，进行完此处理动作后，将直接跳往下一个规则炼（mangle:postrouting）。 	iptables -t nat -A POSTROUTING -p tcp-o eth0 -j SNAT --to-source 194.236.50.155-194.236.50.160:1024-32000
+			DNAT 	改写封包目的地 IP 为某特定 IP 或 IP 范围，可以指定 port 对应的范围，进行完此处理动作后，将会直接跳往下一个规则炼（filter:input 或 filter:forward）。 	iptables -t nat -A PREROUTING -p tcp -d 15.45.23.67 --dport 80 -j DNAT --to-destination 192.168.1.1-192.168.1.10:80-100
+			MIRROR 	镜射封包，也就是将来源 IP 与目的地 IP 对调后，将封包送回，进行完此处理动作后，将会中断过滤程序。 	
+			QUEUE 	中断过滤程序，将封包放入队列，交给其它程序处理。透过自行开发的处理程序，可以进行其它应用，例如：计算联机费用……等。 	
+			RETURN 	结束在目前规则炼中的过滤程序，返回主规则炼继续过滤，如果把自订规则炼看成是一个子程序，那么这个动作，就相当于提早结束子程序并返回到主程序中。 	
+			MARK 	将封包标上某个代号，以便提供作为后续过滤的条件判断依据，进行完此处理动作后，将会继续比对其它规则。 	iptables -t mangle -A PREROUTING -p tcp --dport 22 -j MARK --set-mark 2
+
+		
+	
+firewall:
+	设置IP地址伪装
+		firewall-cmd --zone=external --add-masquerade --permanent
+	
+	修改网卡的zone
+		firewall-cmd --permanent --zone=external --change-interface=eth0 
+		firewall-cmd --permanent --zone=internal --change-interface=eth1
+		
+	设置NAT规则
+		firewall-cmd --permanent --direct --passthrough ipv4 -t nat POSTROUTING -o eth0 -j MASQUERADE -s 192.168.100.0/24
+	
+	重载Firewall使配置生效
+		firewall-cmd --reload 
+
+
+
+
+
+
+
+
+//=======================================================================================//
+
+
+
+
+
+
+
