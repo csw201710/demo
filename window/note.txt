@@ -10,3 +10,35 @@ Struct支持继承么？
 Struct支持多态么？
 Struct支持Private、Protected和Public关键字么？
 
+
+
+vs 反汇编
+    *b1++ = *a1++;
+	01058EFA  mov         eax,dword ptr [b1]  
+				  (*b1) =(*a1)
+	01058EFD  mov         ecx,dword ptr [a1]  
+	01058F00  mov         dl,byte ptr [ecx]  
+	01058F02  mov         byte ptr [eax],dl  
+				   b1++                     
+	01058F04  mov         eax,dword ptr [b1]  
+	01058F07  add         eax,1  
+	01058F0A  mov         dword ptr [b1],eax  
+				   a1++
+	01058F0D  mov         ecx,dword ptr [a1]  
+	01058F10  add         ecx,1  
+	01058F13  mov         dword ptr [a1],ecx  
+	
+	
+
+	
+
+
+	
+	
+	
+	
+
+
+
+
+
