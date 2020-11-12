@@ -9,9 +9,64 @@
 #include <tchar.h>
 #include <ras.h>
 #include <raserror.h>
+#include <assert.h>
 
 #pragma comment(lib, "rasapi32.lib")
 #pragma comment(lib, "Wininet.lib")
+
+size_t privoxy_strlcpy(char *destination, const char *source, const size_t size)
+{
+	if (0 < size)
+	{
+		snprintf(destination, size, "%s", source);
+		/*
+		* Platforms that lack strlcpy() also tend to have
+		* a broken snprintf implementation that doesn't
+		* guarantee nul termination.
+		*
+		* XXX: the configure script should detect and reject those.
+		*/
+		destination[size - 1] = '\0';
+	}
+	return strlen(source);
+}
+
+int string_append(char **target_string, const char *text_to_append)
+{
+	size_t old_len;
+	char *new_string;
+	size_t new_size;
+
+	assert(target_string);
+	assert(text_to_append);
+
+	if (*target_string == NULL)
+	{
+		return -1;
+	}
+
+	if (*text_to_append == '\0')
+	{
+		return 0;
+	}
+
+	old_len = strlen(*target_string);
+
+	new_size = strlen(text_to_append) + old_len + 1;
+
+	if (NULL == (new_string = (char*)realloc(*target_string, new_size)))
+	{
+		free(*target_string);
+
+		*target_string = NULL;
+		return -1;
+	}
+
+	privoxy_strlcpy(new_string + old_len, text_to_append, new_size - old_len);
+
+	*target_string = new_string;
+	return 0;
+}
 
 void ShowError(long lerr)
 {
@@ -79,12 +134,12 @@ int initialize(INTERNET_PER_CONN_OPTION_LIST* options, int option_count)
 								  //指向包含查询或设置选项的INTERNET_PER_CONN_OPTION结构的数组的指针。
 								  /*
 								  typedef struct {
-								  DWORD dwOption;
-								  union {
-								  DWORD dwValue;
-								  LPTSTR pszValue;
-								  FILETIME ftValue;
-								  } Value;
+									 DWORD dwOption;
+									  union {
+										  DWORD dwValue;
+										  LPTSTR pszValue;
+										  FILETIME ftValue;
+									  } Value;
 								  } INTERNET_PER_CONN_OPTION, *LPINTERNET_PER_CONN_OPTION;
 								  */
 	options->pOptions = (INTERNET_PER_CONN_OPTION*)calloc(option_count, sizeof(INTERNET_PER_CONN_OPTION));
@@ -95,10 +150,10 @@ int initialize(INTERNET_PER_CONN_OPTION_LIST* options, int option_count)
 	}
 	/*
 	INTERNET_PER_CONN_FLAGS 				设置或获取连接类型。 Value参数将包含以下一个或多个值：
-	PROXY_TYPE_DIRECT 该连接不使用代理服务器。
-	PROXY_TYPE_PROXY  该连接使用显式设置的代理服务器。
-	PROXY_TYPE_AUTO_PROXY_URL  连接将在指定的URL下载并处理自动配置脚本。
-	PROXY_TYPE_AUTO_DETECT  连接将自动检测设置。
+	                                           PROXY_TYPE_DIRECT 该连接不使用代理服务器。
+										       PROXY_TYPE_PROXY  该连接使用显式设置的代理服务器。
+											   PROXY_TYPE_AUTO_PROXY_URL  连接将在指定的URL下载并处理自动配置脚本。
+											   PROXY_TYPE_AUTO_DETECT  连接将自动检测设置。
 	*/
 	options->pOptions[0].dwOption = INTERNET_PER_CONN_FLAGS;
 }
@@ -222,9 +277,52 @@ int apply(INTERNET_PER_CONN_OPTION_LIST* options)
 
 
 
-static int _setHttpProxy(const char* ip ,int port) {
+static int _setDirect() {
+	INTERNET_PER_CONN_OPTION_LIST options;
+	int ret = 0;
+	ret = initialize(&options, 1);
+	// PROXY_TYPE_AUTO_DETECT 连接将自动检测设置
+	// PROXY_TYPE_DIRECT 该连接不使用代理服务器。
+	options.pOptions[0].Value.dwValue = PROXY_TYPE_AUTO_DETECT | PROXY_TYPE_DIRECT;
 
-	return 0;
+	ret = apply(&options);
+
+	free(options.pOptions);
+
+	return ret;
+}
+
+
+
+static int _setGlobalProxy(const char* ip, int port) {
+	INTERNET_PER_CONN_OPTION_LIST options;
+	int ret = 0;
+	ret = initialize(&options, 3);
+
+	// PROXY_TYPE_PROXY 该连接使用显式设置的代理服务器。
+	// PROXY_TYPE_DIRECT 该连接不使用代理服务器。
+	options.pOptions[0].Value.dwValue = PROXY_TYPE_PROXY | PROXY_TYPE_DIRECT;
+
+	// INTERNET_PER_CONN_PROXY_SERVER   设置或检索包含代理服务器的字符串。
+	options.pOptions[1].dwOption = INTERNET_PER_CONN_PROXY_SERVER;
+	options.pOptions[1].Value.pszValue = "TODO"; // 127.0.0.1:18080
+
+	// INTERNET_PER_CONN_PROXY_BYPASS 设置或检索包含不使用代理服务器的URL的字符串。
+	options.pOptions[2].dwOption = INTERNET_PER_CONN_PROXY_BYPASS;
+
+	if (ip != 0)
+	{
+		options.pOptions[2].Value.pszValue = "TODO"; // bypass  localhost;127.*;10.*
+	}
+	else
+	{
+		options.pOptions[2].Value.pszValue = _T("<local>");
+	}
+	ret = apply(&options);
+
+	free(options.pOptions);
+
+	return ret;
 }
 
 static int _setPACProxy(LPSTR url) {
@@ -238,56 +336,6 @@ static int _setPACProxy(LPSTR url) {
 	// INTERNET_PER_CONN_AUTOCONFIG_URL = 4 //，//设置或获取包含自动配置脚本的URL的字符串。
 	options.pOptions[1].dwOption = INTERNET_PER_CONN_AUTOCONFIG_URL;
 	options.pOptions[1].Value.pszValue = (LPSTR)url;
-
-	ret = apply(&options);
-
-	free(options.pOptions);
-
-	return ret;
-}
-
-static int _setSystemProxy(const char* ip, int port) {
-	INTERNET_PER_CONN_OPTION_LIST options;
-	int ret = 0;
-	ret = initialize(&options, 3);
-
-	// PROXY_TYPE_PROXY 该连接使用显式设置的代理服务器。
-	// PROXY_TYPE_DIRECT 该连接不使用代理服务器。
-	options.pOptions[0].Value.dwValue = PROXY_TYPE_PROXY | PROXY_TYPE_DIRECT;
-
-	// INTERNET_PER_CONN_PROXY_SERVER   设置或检索包含代理服务器的字符串。
-	options.pOptions[1].dwOption = INTERNET_PER_CONN_PROXY_SERVER;
-	options.pOptions[1].Value.pszValue = "TODO";
-
-	// INTERNET_PER_CONN_PROXY_BYPASS 设置或检索包含不使用代理服务器的URL的字符串。
-	options.pOptions[2].dwOption = INTERNET_PER_CONN_PROXY_BYPASS;
-
-	if (ip != 0)
-	{
-		options.pOptions[2].Value.pszValue = "TODO";
-	}
-	else
-	{
-		options.pOptions[2].Value.pszValue = _T("<local>");
-	}
-	ret = apply(&options);
-
-	free(options.pOptions);
-
-	return ret;
-}
-
-static int _resetHttpProxy() {
-	return 0;
-}
-
-static int _resetSystemProxy() {
-	INTERNET_PER_CONN_OPTION_LIST options;
-	int ret = 0;
-	ret = initialize(&options, 1);
-	// PROXY_TYPE_AUTO_DETECT 连接将自动检测设置
-	// PROXY_TYPE_DIRECT 该连接不使用代理服务器。
-	options.pOptions[0].Value.dwValue = PROXY_TYPE_AUTO_DETECT | PROXY_TYPE_DIRECT;
 
 	ret = apply(&options);
 
