@@ -1,0 +1,148 @@
+slapd.conf
+	配置文件重要参数说明
+		database bdb：定义使用的后端数据存储格式，数据库默认采用了berkeley db，其后可以跟的值有bdb、ldbm、passwd、shell。bdb指使用Berkley DB 4数据库
+		suffix "dc=163,dc=com"：suffix是"LDAP基准名"，它是LDAP名字空间在这里的根。设置想要创建的子树的根DN
+		rootdn "cn=admin,dc=163,dc=com"：设置管理LDAP目录的超级用户的DN。这个用户名不要出现在/etc/passwd文件里
+		rootpw {SSHA}TpWoSebaT5gKy2Y3EHmZh+Wc0hJaFp7y：设置这个数据库的超级用户的口令验证方式。也就是上边rootdn设置的用户的密码。一定要用加密的口令存储，可以使用的加密方式有：CRYPT、MD5、SMD5、SHA和SSHA，就是我们第三部生成的密码
+		directory /var/lib/ldap：设置LDAP数据库和索引文件所在的目录
+
+LDAP连接服务器的连接字串格式为：ldap://servername/DN   
+	其中DN有三个属性，分别是CN,OU,DC   
+	
+LDAP是一种通讯协议，如同HTTP是一种协议一样的！ 
+	在 LDAP 目录中，
+·         DC (Domain Component)
+·         CN (Common Name)
+·         OU (Organizational Unit)
+
+
+识别名（Distinguished Name, DN）
+
+相对识别名（Relative Distinguished Name, RDN）
+	相对识别名就是识别名第一个逗号左侧的内容
+	
+基准识别名（Base Distinguished Name, Base DN）
+	一般指整个目录树的根。
+	
+
+模式（Schema）
+	模式是对象类（ObjectClass）、属性类型（AttributeType）、属性语法（Syntax）和匹配规则（MatchingRules）的集合。
+	
+	对象类（ObjectClass）
+		学过面向对象编程语言的人都知道，类是属性的封装。
+		对象类封装了必选的属性和可选的属性，同时对象类也是支持继承的。
+		通过对象类可以很方便地指定条目的类型。一个条目也可以绑定多个对象类。
+		对象类又分为了结构类型（Structural）、抽象类型（Abstract）、辅助类型（Auxiliary）这三类。
+		
+	属性类型（ AttributeType ）
+		属性类型定义了属性值的设定规则（属性语法），以及同一个属性的各个数据相互比较的规则等。
+
+	属性语法（Syntax）
+		下图是 LDAP 协议预定义的一些属性语法，例如二进制、字符串、电话号码类型等。
+		
+	匹配规则（MatchingRule）
+		这个我把它理解为各种类型属性的集合。
+		
+		
+LDIF（LDAP Data Interchange Format） 文件
+	LDAP 数据交换格式文件，它以文本形式存储，用于在服务器之间交换数据。
+	添加数据以及修改数据都需要通过 LDIF 文件来进行。
+	可以跟关系型数据库的 SQL 文件做类比。
+	LDIF 文件的格式一般如下：
+		dn: <识别名>
+		<属性 1>: <值 1>
+		<属性 2>: <值 2>
+		...
+		
+		
+		
+		
+		
+		
+ldapadd 
+	-x   进行简单认证
+	-D   用来绑定服务器的DN
+	-h   目录服务的地址
+	-w   绑定DN的密码
+	-f   使用ldif文件进行条目添加的文件
+	例子 
+	ldapadd -x -D "cn=root,dc=starxing,dc=com" -w secret -f /root/test.ldif 
+	ldapadd -x -D "cn=root,dc=starxing,dc=com" -w secret (这样写就是在命令行添加条目)
+
+
+
+
+ldapsearch 
+	-x   进行简单认证
+	-D   用来绑定服务器的DN
+	-w   绑定DN的密码
+	-b   指定要查询的根节点
+	-H   制定要查询的服务器
+	ldapsearch -x -D "cn=root,dc=starxing,dc=com" -w secret -b "dc=starxing,dc=com" 
+	使用简单认证，用 "cn=root,dc=starxing,dc=com" 进行绑定，
+	要查询的根是 "dc=starxing,dc=com"。这样会把绑定的用户能访问"dc=starxing,dc=com"下的
+	所有数据显示出来。
+	ldapsearch -x -W -D "cn=administrator,cn=users,dc=osdn,dc=zzti,dc=edu,dc=cn" -b "cn=administrator,cn=users,dc=osdn,dc=zzti,dc=edu,dc=cn" -h troy.osdn.zzti.edu.cn 
+	ldapsearch -b "dc=canon-is,dc=jp" -H ldaps://192.168.0.92:636 
+
+
+
+ldapdelete 
+	ldapdelete -x -D "cn=Manager,dc=test,dc=com" -w secret "uid=test1,ou=People,dc=test,dc=com" 
+	ldapdelete -x -D 'cn=root,dc=it,dc=com' -w secert 'uid=zyx,dc=it,dc=com' 
+	这样就可以删除'uid=zyx,dc=it,dc=com'记录了，应该注意一点，如果o或ou中有成员是不能删除的。
+
+
+ldappasswd 
+	-x   进行简单认证
+	-D   用来绑定服务器的DN
+	-w   绑定DN的密码
+	-S   提示的输入密码
+	-s pass 把密码设置为pass
+	-a pass 设置old passwd为pass
+	-A   提示的设置old passwd
+	-H   是指要绑定的服务器
+	-I   使用sasl会话方式
+	#ldappasswd -x -D 'cm=root,dc=it,dc=com' -w secret 'uid=zyx,dc=it,dc=com' -S
+	New password:
+	Re-enter new password: 
+	就可以更改密码了，如果原来记录中没有密码，将会自动生成一个userPassword。
+
+
+ldapmodify 
+	-a 添加新的条目.缺省的是修改存在的条目.
+	-C 自动追踪引用.
+	-c 出错后继续执行程序并不中止.缺省情况下出错的立即停止.比如如果你的ldif 文
+	   件内的某个条目在数据库内并不存在,缺省情况下程序立即退出,但如果使用了该参数,程
+	   序忽略该错误继续执行.
+	-n 用于调试到服务器的通讯.但并不实际执行搜索.服务器关闭时,返回错误；服务器
+	   打开时,常和-v 参数一起测试到服务器是否是一条通路.
+	-v 运行在详细模块.在标准输出中打出一些比较详细的信息.比如:连接到服务器的
+	   ip 地址和端口号等.
+	-M[M] 打开manage DSA IT 控制. -MM 把该控制设置为重要的.
+	-f file 从文件内读取条目的修改信息而不是从标准输入读取.
+	-x 使用简单认证.
+	-D binddn 指定搜索的用户名(一般为一dn 值).
+	-W 指定了该参数,系统将弹出一提示入用户的密码.它和-w 参数相对使用.
+	-w bindpasswd 直接指定用户的密码. 它和-W 参数相对使用.
+	-H ldapuri 指定连接到服务器uri(ip 地址和端口号,常见格式为
+	   ldap://hostname:port).如果使用了-H 就不能使用-h 和-p 参数.
+	-h ldaphost 指定要连接的主机的名称/ip 地址.它和-p 一起使用.
+	-p ldapport 指定要连接目录服务器的端口号.它和-h 一起使用.
+	   如果使用了-h 和-p 参数就不能使用-H 参数.
+	-Z[Z] 使用StartTLS 扩展操作.如果使用-ZZ,命令强制使用StartTLS 握手成功.
+	-V 启用证书认证功能,目录服务器使用客户端证书进行身份验证,必须与-ZZ 强制启用
+	   TLS 方式配合使用,并且匿名绑定到目录服务器.
+	-e 设置客户端证书文件,例: -e cert/client.crt
+	-E 设置客户端证书私钥文件,例: -E cert/client.key
+	#ldapmodify -x -D "cn=root,dc=it,dc=com" -W -f modify.ldif 
+	将modify.ldif中的记录更新原有的记录。
+
+
+
+
+
+
+
+		
+		
