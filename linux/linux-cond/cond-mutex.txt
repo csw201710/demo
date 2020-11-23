@@ -1,0 +1,227 @@
+
+1. 互斥量和条件变量的使用情景:
+
+		//只是用mutex的代码
+		#include <stdio.h>
+		#include <unistd.h>
+		#include <stdlib.h>
+		#include <pthread.h>
+		pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+		pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+		typedef struct node 
+		{
+			int _data;
+			struct node *_next;
+		}node_t,* node_p,**node_pp;
+		 
+		node_p head = NULL;
+		 
+		node_p alloc_node(int data)
+		{
+			node_p ret = (node_p)malloc(sizeof(node_t));
+			ret->_data = data;
+			ret->_next = NULL;
+			return ret;
+		}
+		 
+		void init(node_pp phead)
+		{
+			*phead = alloc_node(0);
+		}
+		 
+		void push_front(node_p head,int data)
+		{
+			node_p tmp = alloc_node(data);
+			tmp->_next = head->_next;
+			head->_next = tmp;
+		}
+		 
+		void pop_front(node_p head, int * pdata)
+		{
+			if(head->_next!=NULL)
+			{
+				node_p tmp = head->_next;
+				head->_next = tmp->_next;
+		 
+				*pdata = tmp->_data;
+				free(tmp);        
+			}
+		}
+		 
+		void show(node_p head)
+		{
+			node_p cur = head->_next;
+			while(cur)
+			{
+				printf("%d->", cur->_data);
+				cur = cur->_next;
+			}
+			printf("\n");
+		}
+		 
+		//消费者
+		void * consumer(void *argv)
+		{
+			int data;
+			while(1)
+			{
+				pthread_mutex_lock(&lock);
+				// while(head->_next==NULL)
+				if(head->_next==NULL)
+				{
+					printf("producter is not ready\n"); // 不断输入未准备好信息
+				}
+				else{
+				printf("producter is ready...\n");
+				pop_front(head,&data);
+				printf("%s  data = %d \n",__func__, data);
+				}
+				pthread_mutex_unlock(&lock);
+		 
+				sleep(1);
+			}
+		}
+		 
+		void * producter(void * argv)
+		{
+			int data = rand()%1234;
+			while(1)
+			{
+				sleep(4);
+				pthread_mutex_lock(&lock);
+				push_front(head,data);
+				printf("%s data :: %d\n",__func__, data);
+				pthread_mutex_unlock(&lock);
+				// pthread_cond_signal(&cond);
+			}
+		}
+		 
+		int main(int argc, char const *argv[])
+		{
+			init(&head);
+		 
+			pthread_t id1,id2;
+			
+			pthread_create(&id1,NULL,consumer,NULL);
+			pthread_create(&id2,NULL,producter,NULL);
+		 
+			pthread_join(id1,NULL);
+			pthread_join(id2,NULL);
+		}
+
+			
+	使用条件变量代码:
+			#include <stdio.h>
+			#include <unistd.h>
+			#include <stdlib.h>
+			#include <pthread.h>
+			pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+			pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+			typedef struct node 
+			{
+				int _data;
+				struct node *_next;
+			}node_t,* node_p,**node_pp;
+			 
+			node_p head = NULL;
+			 
+			node_p alloc_node(int data)
+			{
+				node_p ret = (node_p)malloc(sizeof(node_t));
+				ret->_data = data;
+				ret->_next = NULL;
+				return ret;
+			}
+			 
+			void init(node_pp phead)
+			{
+				*phead = alloc_node(0);
+			}
+			 
+			void push_front(node_p head,int data)
+			{
+				node_p tmp = alloc_node(data);
+				tmp->_next = head->_next;
+				head->_next = tmp;
+			}
+			 
+			void pop_front(node_p head, int * pdata)
+			{
+				if(head->_next!=NULL)
+				{
+					node_p tmp = head->_next;
+					head->_next = tmp->_next;
+			 
+					*pdata = tmp->_data;
+					free(tmp);        
+				}
+			}
+			 
+			void show(node_p head)
+			{
+				node_p cur = head->_next;
+				while(cur)
+				{
+					printf("%d->", cur->_data);
+					cur = cur->_next;
+				}
+				printf("\n");
+			}
+			 
+			//消费者
+			void * consumer(void *argv)
+			{
+				int data;
+				while(1)
+				{
+					pthread_mutex_lock(&lock);
+					while(head->_next==NULL)
+					// if(head->_next==NULL)
+					{
+						printf("producter is not ready\n\n");
+						
+						//unlock mutex,然后等待cond条件变化，然后调用lock mutex
+						pthread_cond_wait(&cond,&lock);  
+						break;
+					}
+					// else{
+					// printf("producter is ready...\n");
+					pop_front(head,&data);
+					printf("%s  data = %d \n",__func__, data);
+					// }
+					pthread_mutex_unlock(&lock);
+			 
+					sleep(1);
+				}
+			}
+			 
+			void * producter(void * argv)
+			{
+				int data = rand()%1234;
+				while(1)
+				{
+					sleep(4);
+					pthread_mutex_lock(&lock);
+					push_front(head,data);  //获取数据处理掉
+					printf("%s data :: %d\n",__func__, data); 
+					pthread_cond_signal(&cond); //通知生产者生成数据
+					pthread_mutex_unlock(&lock);
+					
+				}
+			}
+			 
+			int main(int argc, char const *argv[])
+			{
+				init(&head);
+			 
+				pthread_t id1,id2;
+				
+				pthread_create(&id1,NULL,consumer,NULL);
+				pthread_create(&id2,NULL,producter,NULL);
+			 
+				pthread_join(id1,NULL);
+				pthread_join(id2,NULL);
+			}
+
+
+
