@@ -55,9 +55,16 @@ LDIF（LDAP Data Interchange Format） 文件
 		...
 		
 		
+报错修复:		
+	数据库异常修复(window端)
+		db_recover.exe -h C:\OpenLDAP\data  -v
 		
 		
-		
+	value #0 provided more than once:
+		.ldif文件不规范，可能有多余空格
+	
+	
+	
 		
 ldapadd 
 	-x   进行简单认证
@@ -67,10 +74,37 @@ ldapadd
 	-f   使用ldif文件进行条目添加的文件
 	例子 
 	ldapadd -x -D "cn=root,dc=starxing,dc=com" -w secret -f /root/test.ldif 
-	ldapadd -x -D "cn=root,dc=starxing,dc=com" -w secret (这样写就是在命令行添加条目)
+	ldapadd -x -D "cn=root,dc=starxing,dc=com" -w 密码 
 
+	ldapadd -D "cn=Manager,dc=test,dc=com" -w secret -c -f 1\test.ldif
 
+		test.ldif文件:
+				dn: ou=people,dc=test,dc=com
+				objectClass: organizationalUnit
+				ou: people
 
+				dn: ou=group,dc=test,dc=com
+				objectClass: organizationalUnit
+				ou: group
+
+				dn: uid=user1,dc=test,dc=com
+				objectClass: top
+				objectClass: account
+				objectClass: posixAccount
+				objectClass: shadowAccount
+				cn: user1
+				uid: user1
+				uidNumber: 16859
+				gidNumber: 100
+				homeDirectory: /home/user1
+				loginShell: /bin/bash
+				gecos: user1
+				userPassword: {crypt}x
+				shadowLastChange: 0
+				shadowMax: 0
+				shadowWarning: 0
+
+	
 
 ldapsearch 
 	-x   进行简单认证
@@ -108,7 +142,36 @@ ldappasswd
 	Re-enter new password: 
 	就可以更改密码了，如果原来记录中没有密码，将会自动生成一个userPassword。
 
+	ldappasswd -s 123456  -W -D "cn=admin,dc=ldapdomain,dc=com" -x "uid=adam,ou=people,dc=ldapdomain,dc=com"
+	ldapadd -x -W -D "cn=admin,dc=ldapdomain,dc=com" -f user.ldif
+	
+	
+	
+	ldappasswd -s abc  -w secret -D "cn=Manager,dc=test,dc=com" -x "uid=user1,ou=people,dc=test,dc=com"
 
+	OpenLDAP进阶使用
+		1，设定用户密码定期修改及过期时间(shadowAccount)
+		向条目中添加一个名为shadowAccount的objectClass, 设定如下属性(attributes):
+		shadowLastChange: 密码从1970年1月1日开始, 到最近一次修改, 一共间隔了多少天. 比如这里指定成16967就表示2016年6月15日. 也可以直接获取当天的日期,方法为:在系统里useradd一个用户,查看/etc/shadow中该用户的第三个值, 即是该值. 该值如果设置成0, 则表示下次登陆将强制修改密码, 用户修改密码成功以后, 该值将发生对应的变化;
+		shadowMin: 密码从shadowLastChange指定的日期开始, 到多少天以后才能再次修改密码, 防止某些人天天没事就修改密码, 此值设置成0表示不限制;
+		shadowMax: 密码从shadowLastChange指定的日期开始, 到多少天以后过期(即多少天后必须更改密码);
+		shadowInactive: 密码过期以后还可以登陆多少天(每次登陆都会要求更改密码), 如果超过此值指定的天数, 下次登陆时会提示Your account has expired; please contact your system administrator;
+		shadowWarning: 提前多少天开始警告用户密码将会过期;
+		shadowExpire: 密码从1970年1月1日开始, 多少天以后将会过期, 这里一般用不到;
+		shadowFlag: 暂时无用.
+
+		一组建议的值
+		shadowLastChange: 0
+		shadowMin: 0
+		shadowMax: 90 #每隔90天强制更换密码
+		shadowInactive: 7 #过期以后还有7天可以登陆,每次登陆都会提示修改密码
+		shadowWarning: 8 #提前8天开始提示密码即将过期
+
+	
+	
+	
+	
+	
 ldapmodify 
 	-a 添加新的条目.缺省的是修改存在的条目.
 	-C 自动追踪引用.
@@ -140,9 +203,73 @@ ldapmodify
 
 
 
+slapcat 
+	apcat 命令用于将数据条目转换为 OpenLDAP 的 LDIF 文件，可用于 OpenLDAP 条目的备份以及结合 slapdadd 指定用于恢复条目
+		-a filter：添加过滤选项。
+		-b suffix：指定 suffix 路径，如 dc=shilei，dc=com。
+		-d sumber：指定 debug 输出级别。
+		-f：指定 OpenLDAP 的配置文件。
+		-F：指定 OpenLDAP 的数据库文件目录。
+		-c：出现错误时，继续输出条目。
+		-H：使用 LDAP 服务器的 URL 地址进行操作。
+		-v：输出详细信息。
+	
+	
 
 
 
+权限管理
+	设置方法
+		1、可以将 include行放在/etc/openldap/slapd.conf 的顶部，指向一个单独的文件（例如， include /etc/openldap/slapd.access.conf） 
+		2、或者可以将 ACL 直接添加到 slapd.conf。这完全由您选择 ― Mandrake 通常使用 include 行；Red Hat 将 ACL 添加到配置文件。slapd.conf文件路径：/etc/openldap/slapd.conf
+		
+	ACL设置语法
+		access to <what> by <who> <access> <control>
+			其中,access to指示启用访问控制，上句大致可以理解为: 
+				access to <对什么目标进行控制>[by <作用于哪些访问者> <授予什么样的访问权限><采取什么样的匹配控制动作>]+
+			what 是一个占位符，表示授权访问的对象或属性。可以使用单独的规则来明确保护各个目录分支。
+				还可以使用正则表达式通过一条规则处理目录树的各个区域。slapd 按照各条规则列在配置文件中的先后顺序依次评估它们。
+				较通用的规则应列在较特定的规则之后 － 在评估 slapd 认为有效的第一条规则之后，随后的所有项都将被忽略
+			who 确定应该授权谁来访问 what 确定的区域。可以使用正则表达式。
+				slapd 同样会在评估第一条有效规则之后中止对随后的 who 的评估，所以应将较具体的规则列在较抽象的规则之前。
+			
+	
+	access 访问类型
+		none
+		auth
+		compare
+		search
+		read
+		writer
+	
+	用户组及其访问授权
+		*
+		anonymous
+		users
+		self
+		dh.regex=<regex>
 
+
+	
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 		
 		
