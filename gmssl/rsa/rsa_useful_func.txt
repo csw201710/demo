@@ -34,3 +34,18 @@ RSA*  pubKeyToRSA(unsigned char* keydata, int key_len){
 }
 
 
+int RSAToPubKey(RSA *rsa,unsigned char* buf, int *pBufLen){
+	const BIGNUM *n;
+	int rsabits;
+	RSA_get0_key(rsa, &n, NULL, NULL);
+	rsabits = RSA_size(rsa);
+	if((*pBufLen) < rsabits){
+		printf("buffer too small");
+		return -1;
+	}
+	BN_bn2bin(n, buf);
+	*pBufLen = rsabits;
+	return 0;
+}
+
+
