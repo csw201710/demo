@@ -1,0 +1,36 @@
+// rsa 公钥结构转换
+RSA*  pubKeyToRSA(unsigned char* keydata, int key_len){
+	int ret;
+	RSA* rsa = NULL;
+
+	BIGNUM *n, *e;
+	if(key_len != 128 && key_len != 256)
+	{
+			printf("RSA public key length error.\n");
+			return 0;
+	}
+
+	rsa = RSA_new();
+	if(rsa == NULL)
+	{
+			printf("RSA_new error.\n");
+			return 0;
+	}
+
+	n = BN_new();
+	e = BN_new();
+
+	RSA_set0_key(rsa, n, e, NULL);
+	BN_set_word(e, RSA_F4);
+
+	if(!BN_bin2bn(keydata, key_len, n))
+	{
+			printf("BN_bin2bn error.\n");
+			RSA_free(rsa);
+			return 0;
+	}
+	return rsa;
+
+}
+
+
