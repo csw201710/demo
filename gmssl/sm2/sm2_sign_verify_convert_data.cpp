@@ -424,3 +424,115 @@ int main(int argc,char** argv){
 }
 
 
+
+
+
+
+
+
+
+
+int  ECDSA_SIG_DerTosigBuf(unsigned char* der, int derLen, unsigned char* sig, int* pSigLen){
+    
+    ECDSA_SIG *s;
+    const unsigned char *p = 0;
+    unsigned char * tmpDer = NULL;
+    int tmpDerLen = -1;
+    int ret = -1;
+
+    if(pSigLen == 0 || (*pSigLen)< 64){
+        ERROR("invalid param (*pSigLen)< 64");
+        ret = -1; goto err;
+    }
+    s = ECDSA_SIG_new();
+    if (s == NULL){
+        ERROR("ECDSA_SIG_new failed");
+        ret = -1; goto err;
+    }
+     p = der;   
+    if (d2i_ECDSA_SIG(&s, &p, derLen) == NULL){
+        ERROR("d2i_ECDSA_SIG failed");
+        ret = -1;goto err;
+    }
+        
+    /* Ensure signature uses DER and doesn't have trailing garbage */
+    tmpDerLen = i2d_ECDSA_SIG(s, &tmpDer);
+    if (tmpDerLen != derLen || memcmp(der, tmpDer, tmpDerLen) != 0){
+        ERROR("invalid ECDSA_SIG der data");
+        ret = -1; goto err;
+    }
+    ret = ECDSA_SIG_get_signdataBuf(s, sig, pSigLen);
+    if(ret != 0){
+        ERROR("ECDSA_SIG_get_signdataBuf failed");
+        ret = -1; goto err;
+    }
+    
+    ret = 0;
+err:
+    OPENSSL_clear_free(tmpDer, tmpDerLen);
+    ECDSA_SIG_free(s);
+    return ret;
+}
+
+
+
+
+
+int sigBufToECDSA_SIG_Der(unsigned char* sig, int sigLen, unsigned char* outDer, int *pOutDerLen){
+    ECDSA_SIG *ecdSig = 0;
+    BIGNUM* r = 0, *s = 0;
+    unsigned char *der = 0;
+    int derlen = -1;
+    int ret;
+      if(sigLen < 64){
+        ERROR("sigature data sigLen < 64");
+        ret = -1;
+        goto err;
+      }
+      ecdSig = ECDSA_SIG_new();
+    		if(ecdSig == NULL)
+    		{
+    				ERROR("ECDSA_SIG_new error.");
+    				ret = -1;
+    				goto err;
+    		}
+      r = BN_new();
+    		s = BN_new();
+
+    		ECDSA_SIG_set0(ecdSig, r, s);
+
+    		if (!BN_bin2bn(sig, 32, r)) {
+    				ERROR("BN_bin2bn r error.");
+    				ret = -1;
+    				goto err;
+    		}
+    		
+    		if (!BN_bin2bn(sig + 32, 32, s)) {
+    				ERROR("BN_bin2bn s error.");
+    				ret = -1;
+    				goto err;
+    		}
+		
+      	derlen = i2d_ECDSA_SIG(ecdSig, &der);
+      	if (derlen <= 0 ) {
+      	  ERROR("i2d_ECDSA_SIG failed");
+      	  ret = -1;
+      		 goto err;
+      	}
+      	//print_arr("i2d_ECDSA_SIG", der, derlen);
+      	if((*pOutDerLen) < derlen){
+      	  ERROR("[sig to ecdsa] buffer not enough");  
+      	  ret = -1;
+      		 goto err;
+      	}
+      	memcpy(outDer, der, derlen);
+       (*pOutDerLen) = derlen;
+
+    ret = 0;
+err:
+    OPENSSL_clear_free(der, derlen);
+    ECDSA_SIG_free(ecdSig);
+    return ret;  
+}
+
+
