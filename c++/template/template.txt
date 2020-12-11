@@ -1,0 +1,737 @@
+C++中所有的值都必然属于左值、右值二者之一。左值是指表达式结束后依然存在的持久化对象，右值是指表达式结束时就不再存在的临时对象。所有的具名变量或者对象都是左值，而右值不具名。很难得到左值和右值的真正定义，但是有一个可以区分左值和右值的便捷方法：看能不能对表达式取地址，如果能，则为左值，否则为右值。
+
+
+class MyArray 
+{ 
+public：
+    typedef int LengthType;
+    .....
+}
+
+template<class T>
+void MyMethod( T myarr ) 
+{ 
+	//这个时候typename的作用就是告诉c++编译器，typename后面的字符串为一个类型名称，而不是成员函数或者成员变量，
+	//这个时候如果前面没有typename，编译器没有任何办法知道T::LengthType是一个类型还是一个成员名称（静态数据成员或者静态函数），
+	//所以编译不能够通过。
+    typedef typename T::LengthType LengthType; 
+    LengthType length = myarr.GetLength; 
+}
+/*
+	在模板引入c++后，最初定义模板的方法为： template<class T>......
+	这里class关键字表明T是一个类型，后来为了避免class在这两个地方的使用可能给人带来混淆，所以引入了typename这个关键字。它的作用同
+	class一样表明后面的符号为一个类型，这样在定义模板的时候就可以使用下面的方式了： template<typename T>......
+	在模板定义语法中关键字class与typename的作用完全一样。
+	
+	typename 另外一个作用为：使用嵌套依赖类型(nested depended name)，
+	
+		class Box
+		{
+		public:
+			double length;   // 长度
+			double breadth;  // 宽度
+			double height;   // 高度
+		};
+
+
+		void sss() {
+			class Box a;
+			Box b;
+			b.length = 1;
+			a.length = 1;
+		}
+*/
+
+
+1. 模板函数定义的一般形式如下所示：
+
+	template <class type> ret-type func-name(parameter list)
+	{
+	   // 函数的主体
+	}
+		//例子
+		#include <iostream>
+		#include <string>
+		 
+		using namespace std;
+		 
+		template <typename T>
+		inline T const& Max (T const& a, T const& b) 
+		{ 
+			return a < b ? b:a; 
+		} 
+		int main ()
+		{
+		 
+			int i = 39;
+			int j = 20;
+			cout << "Max(i, j): " << Max(i, j) << endl; 
+		 
+			double f1 = 13.5; 
+			double f2 = 20.7; 
+			cout << "Max(f1, f2): " << Max(f1, f2) << endl; 
+		 
+			string s1 = "Hello"; 
+			string s2 = "World"; 
+			cout << "Max(s1, s2): " << Max(s1, s2) << endl; 
+		 
+		   return 0;
+		}
+
+2 类模板
+	泛型类声明的一般形式如下所示
+		template <class type> class class-name {
+		}
+		
+		//例子
+			#include <iostream>
+			#include <vector>
+			#include <cstdlib>
+			#include <string>
+			#include <stdexcept>
+			 
+			using namespace std;
+			 
+			template <class T>
+			class Stack { 
+			  private: 
+				vector<T> elems;     // 元素 
+			 
+			  public: 
+				void push(T const&);  // 入栈
+				void pop();               // 出栈
+				T top() const;            // 返回栈顶元素
+				bool empty() const{       // 如果为空则返回真。
+					return elems.empty(); 
+				} 
+			}; 
+			 
+			template <class T>
+			void Stack<T>::push (T const& elem) 
+			{ 
+				// 追加传入元素的副本
+				elems.push_back(elem);    
+			} 
+			 
+			template <class T>
+			void Stack<T>::pop () 
+			{ 
+				if (elems.empty()) { 
+					throw out_of_range("Stack<>::pop(): empty stack"); 
+				}
+				// 删除最后一个元素
+				elems.pop_back();         
+			} 
+			 
+			template <class T>
+			T Stack<T>::top () const 
+			{ 
+				if (elems.empty()) { 
+					throw out_of_range("Stack<>::top(): empty stack"); 
+				}
+				// 返回最后一个元素的副本 
+				return elems.back();      
+			} 
+			 
+			int main() 
+			{ 
+				try { 
+					Stack<int>         intStack;  // int 类型的栈 
+					Stack<string> stringStack;    // string 类型的栈 
+			 
+					// 操作 int 类型的栈 
+					intStack.push(7); 
+					cout << intStack.top() <<endl; 
+			 
+					// 操作 string 类型的栈 
+					stringStack.push("hello"); 
+					cout << stringStack.top() << std::endl; 
+					stringStack.pop(); 
+					stringStack.pop(); 
+				} 
+				catch (exception const& ex) { 
+					cerr << "Exception: " << ex.what() <<endl; 
+					return -1;
+				} 
+			}
+
+
+3. 模板参数类型
+	1) 类型模板参数
+		指代具体的类型
+		
+	2) 非类型模板参数
+		整数及枚举类型
+				template<unsigned No>
+				class theClass{
+				 public:
+					static int id;
+
+					theClass(){
+						++id;
+					}
+					~theClass(){
+						printf("No:%d,id: %d\n", No, id);
+					}
+				};
+				int theClass<1>::id = 0;
+				int theClass<2>::id = 0;
+
+
+				int main(){
+					/*
+						No:2,id: 1
+						No:1,id: 3
+						No:1,id: 3
+						No:1,id: 3
+					*/
+					theClass<1> a1;
+					theClass<1> a3;
+					theClass<1> a4;
+					theClass<2> a2;
+					return 0;
+				}
+		指向对象或函数的指针
+		对对象或函数的引用
+		指向对象成员的指针
+		
+	3) 模板型模板参数
+		声明形式
+			template<typename T,template<typename TT0,typename TT1> class A>
+			struct Foo{A<T,T> bar;};
+		第二个模板参数A即为一个模板，其关键字class是必须的，即只有类模板可以作为模板参数。
+	
+
+	
+	
+	
+模板元编程:
+	 if判断
+		#include <iostream>
+		 
+		template<bool c, typename Then, typename Else> class IF_ {};    //基础类模版
+		 
+		template<typename Then, typename Else>
+		class IF_<true, Then, Else> { public: typedef Then reType; };        //类模版的偏特化; 如果第一个模版非类型参数为true，IF_<true, Then, Else>::reType的值为模版的第二个类型参数Then
+		 
+		template<typename Then, typename Else>
+		class IF_<false,Then, Else> { public: typedef Else reType; };         //类模版的偏特化
+		 
+		int main()
+		{
+			const int len = 4;
+		 
+			// 定义一个指定字节数的类型
+			typedef
+				IF_<sizeof(short)==len, short,
+				IF_<sizeof(int)==len, int,
+				IF_<sizeof(long)==len, long,
+				IF_<sizeof(long long)==len, long long,
+				void>::reType>::reType>::reType>::reType int_my;
+			std::cout << sizeof(int_my) << '\n';
+		}
+		 
+		/*分析最里面的一层：
+		 * IF_<sizeof(long long)==len, long long, void>::reType
+		 * 如果sizeof(long long) == 4, 上面的表达式返回long long, 否则返回void
+		*/
+
+	
+		template< bool B, class T, class F >
+		struct conditional;
+
+		所以上面的代码可以改写为如下代码：
+
+		#include <iostream>
+		#include <type_traits>
+
+		int main()
+		{
+			const int len = 4;
+
+			// 定义一个指定字节数的类型
+			typedef
+			std::conditional<sizeof(short)==len, short,
+			std::conditional<sizeof(int)==len, int,
+			std::conditional<sizeof(long)==len, long,
+			std::conditional<sizeof(long long)==len, long long,
+			void>::type>::type>::type>::type int_my;
+			std::cout << sizeof(int_my) << '\n';
+		}
+	
+	
+	循环展开:(通过模板特化来结束递归展开，达到运行期的for和while语句的功能)
+		#include <iostream>
+
+		template<int N> class sum
+		{
+		public: static const int ret = sum<N-1>::ret + N;
+		};
+
+		template<> class sum<0>
+		{
+		public: static const int ret = 0;
+		};
+
+		int main()
+		{
+			std::cout << sum<5>::ret <<std::endl;
+			return 0;
+		}
+	
+	switch/case分支:(模板特化)
+		#include <iostream>
+		using namespace std;
+
+		template<int v> class Case
+		{
+			public:
+				static inline void Run()
+				{
+				cout << "default case" << endl;
+				}
+		};
+
+		template<> class Case<1>
+		{
+			public:
+				static inline void Run()
+				{
+					cout << "case 1" << endl;
+				}
+		};
+
+		template<> class Case<2>
+		{
+		public:
+			static inline void Run()
+			{
+				cout << "case 2" << endl;
+			}
+		};
+
+		int main()
+		{
+			Case<2>::Run();
+		}
+
+
+	特性、策略与标签
+		#include <iostream>
+		#include <vector>
+
+		template<typename iter>
+		typename iter::value_type mysum(iter begin, iter end)
+		{
+			typename iter::value_type sum(0);
+			for(iter i=begin; i!=end; ++i)
+				sum += *i;
+			return sum;
+		}
+
+		int main()
+		{
+			std::vector<int> v;
+			for(int i = 0; i<100; ++i)
+				v.push_back(i);
+			std::cout << mysum(v.begin(), v.end()) << '\n';
+		}
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+			
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
