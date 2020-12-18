@@ -74,9 +74,10 @@ static void remove_client(conn* item){
 void close_all_client(LIBEVENT_THREAD* me, void (*callback)(conn * conn) ){
     while (!QUEUE_EMPTY(&me->online_head)) {
 		QUEUE *q = QUEUE_HEAD(&me->online_head);
+        QUEUE_REMOVE(q);
 		conn *tmp = QUEUE_DATA(q, struct conn, head);
         callback(tmp);
-		QUEUE_REMOVE(q);
+
 	}
 }
 
@@ -85,8 +86,6 @@ void close_all_client(LIBEVENT_THREAD* me, void (*callback)(conn * conn) ){
 
 void conn_close(conn *c) {
     /* delete the event, the socket and the conn */
-    INFO("%s conn:[0x%p]",__func__, c);
-    INFO("fd %d connection closed.", c->sfd);
     if(c->event){
         event_free(c->event);
         c->event = 0;
@@ -101,13 +100,14 @@ void conn_close(conn *c) {
 #endif
     remove_client(c);
     if(c->bev) {
+        INFO("%s conn:[%p]",__func__, c);
+        //bufferevent_disable(c->bev, EV_READ);
         bufferevent_free(c->bev);
         c->bev = 0;
     }else{
+        INFO("fd %d connection closed.", c->sfd);
         close(c->sfd);
     }
-
-
     free(c);
     return;
 }
@@ -119,7 +119,7 @@ conn* client_new(void* ctx, int fd, struct bufferevent *bev){
     c->sfd = fd;
     c->bev = bev;
     c->state = init_state;
-    INFO("%s conn:[0x%p]",__func__, c);
+    INFO("%s conn:[%p]",__func__, c);
     return c;
 }
 
@@ -176,7 +176,7 @@ conn* server_new(int port){
     c->state = init_state;
 
     init_conn_head(c);
-    INFO("%s conn:[0x%p]",__func__, c);
+    INFO("%s conn:[%p]",__func__, c);
     return c;
 }
 
@@ -232,7 +232,7 @@ static void cq_malloc_add( void* arg){
 static void cq_malloc_free(){
     for (std::set<void*>::iterator it = cq_malloc.begin(); it != cq_malloc.end(); ++it){
         void* arg = *it;
-        INFO("%s free %p", __func__,arg)
+        INFO("%s free(%p)", __func__,arg)
         free(arg);
     }
 	cq_malloc.clear();
@@ -328,8 +328,8 @@ static void readcb(struct bufferevent *bev, void *ctx)
         //evbuffer_drain 将数据从缓冲区前面移除
         evbuffer_drain(datain, msg_len);
         //bufferevent_free(bev);free(ctx);
-        bufferevent_disable(bev, EV_READ);
-        c->state = terminal_state;
+        //bufferevent_disable(bev, EV_READ);
+        //c->state = terminal_state;
     }
 
 
@@ -521,14 +521,16 @@ static void *worker_libevent(void *arg) {
 
     event_base_loop(me->base, 0);
 
-    // same mechanism used to watch for all threads exiting.
-    register_thread_initialized();
+
 
     event_base_free(me->base);
 
     free(me->new_conn_queue);
+
     close_all_client(me, conn_close);
     pthread_detach(pthread_self());
+    // same mechanism used to watch for all threads exiting.
+    register_thread_initialized();
     return NULL;
 }
 
@@ -589,8 +591,9 @@ void stop_threads(void) {
     char buf[1];
     int i;
 
-    buf[0] = 's';
+    INFO("asking background threads to stop");
 
+    buf[0] = 's';
     pthread_mutex_lock(&init_lock);
     init_count = 0;
     for (i = 0; i < total_threads; i++) {
@@ -599,22 +602,22 @@ void stop_threads(void) {
             /* TODO: This is a fatal problem. Can it ever happen temporarily? */
         }
     }
+
     wait_for_thread_registration(total_threads);
     pthread_mutex_unlock(&init_lock);
 
+    //destory
     pthread_mutex_destroy(&cqi_freelist_lock);
     pthread_cond_destroy(&init_cond);
     pthread_mutex_destroy(&init_lock);
 
     //释放cqi_freelist
     cq_malloc_free();
-
+    //释放线程组空间
     if(threads){
         free(threads);
         threads = 0;
     }
-
-    INFO("asking background threads to stop");
     INFO("all background threads stopped");
 }
 
@@ -776,3 +779,6 @@ void event_handler(const evutil_socket_t fd, const short which, void *arg) {
     /* wait for next event */
     return;
 }
+
+
+
