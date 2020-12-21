@@ -45,9 +45,14 @@ struct conn{
     QUEUE head;
     int sfd; //socket
     struct event* event;
+#ifdef TLS
+    int ssl_enabled;
     void *ssl;
+#endif
     state_t state;
     struct bufferevent *bev;
+    char ip[64];
+    int port;
 };
 
 

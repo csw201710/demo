@@ -79,7 +79,7 @@ void LogString(unsigned long logType, const char *file, int line,const char* fmt
 				   timenow->tm_hour, timenow->tm_min, timenow->tm_sec);
 
 #if 1
-	sprintf(FileInfo,"[%s:%d]",file,line);
+	snprintf(FileInfo, sizeof(FileInfo) - 1,"[%s:%d]",file,line);
 #else
   FileInfo[0] = '\0';
 #endif
@@ -120,7 +120,7 @@ void LogString(unsigned long logType, const char *file, int line,const char* fmt
 		fwrite("\n", 1, 1, f);
 		fclose(f);
 	}
- free(LogInfo);
+    free(LogInfo);
 
 }
 

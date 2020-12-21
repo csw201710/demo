@@ -46,10 +46,19 @@ static struct event_base *main_base;
 static void signal_cb(evutil_socket_t fd, short event, void *arg)
 {
     struct event *signal = (struct event *)arg;
+    int sig = event_get_signal(signal);
+    ERROR("signal_cb: got signal %d", sig );
+    if(SIGUSR1 == sig){
+        event_del(signal);
+        stop_main_loop = 1;
+    }else if(SIGINT == sig){
+        //again
+        //evsignal_add(signal,NULL);
+        event_del(signal);
+        stop_main_loop = 1;
+    }
 
-    ERROR("signal_cb: got signal %d", event_get_signal(signal));
-    event_del(signal);
-    stop_main_loop = 1;
+
 
 }
 
@@ -87,6 +96,12 @@ int main(){
     event_base_set(main_base, &signal_int);
     evsignal_add(&signal_int,NULL);
 
+    struct event signal_usr1;
+    event_set(&signal_usr1, SIGUSR1, EV_SIGNAL, signal_cb, (void *)&signal_usr1);
+    event_base_set(main_base, &signal_usr1);
+    evsignal_add(&signal_usr1,NULL);
+
+
     // 创建工作线程,每个线程独立的 event loop
     memcached_thread_init(10 , 0);
 
@@ -99,12 +114,15 @@ int main(){
         perror("event_add");
         return -1;
     }
-
+    //int i=0;
     while (!stop_main_loop) {
         if (event_base_loop(main_base, EVLOOP_ONCE) != 0) {
             retval = -1;
             break;
         }
+        //if(i++>100){
+         //   stop_main_loop = 1;
+        //}
     }
     stop_threads();
 

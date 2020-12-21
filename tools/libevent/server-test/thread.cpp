@@ -4,6 +4,10 @@
 
 #include "thread.h"
 #include "Log.h"
+#ifdef TLS
+#include "openssl/ssl.h"
+
+#endif
 
 #define ITEMS_PER_ALLOC 64
 
@@ -93,19 +97,25 @@ void conn_close(conn *c) {
 
 #ifdef TLS
     if (c->ssl) {
-        SSL_shutdown(c->ssl);
-        SSL_free(c->ssl);
+        SSL_shutdown((SSL*)c->ssl);
+        SSL_free((SSL*)c->ssl);
         c->ssl = 0;
     }
 #endif
     remove_client(c);
+
+    if(c->ip[0] != '\0' ){
+        INFO("close client: [%s:%d]", c->ip, c->port);
+    }else{
+        INFO("fd %d connection closed.", c->sfd);
+    }
+
     if(c->bev) {
-        INFO("%s conn:[%p]",__func__, c);
+        //INFO("%s conn:[%p]",__func__, c);
         //bufferevent_disable(c->bev, EV_READ);
         bufferevent_free(c->bev);
         c->bev = 0;
     }else{
-        INFO("fd %d connection closed.", c->sfd);
         close(c->sfd);
     }
     free(c);
@@ -119,7 +129,7 @@ conn* client_new(void* ctx, int fd, struct bufferevent *bev){
     c->sfd = fd;
     c->bev = bev;
     c->state = init_state;
-    INFO("%s conn:[%p]",__func__, c);
+    //INFO("%s conn:[%p]",__func__, c);
     return c;
 }
 
@@ -176,7 +186,7 @@ conn* server_new(int port){
     c->state = init_state;
 
     init_conn_head(c);
-    INFO("%s conn:[%p]",__func__, c);
+    INFO("%s conn:[%d]",__func__, c->sfd);
     return c;
 }
 
@@ -238,6 +248,8 @@ static void cq_malloc_free(){
 	cq_malloc.clear();
 
 }
+
+
 
 static CQ_ITEM *cqi_new(void) {
     CQ_ITEM *item = NULL;
@@ -327,9 +339,10 @@ static void readcb(struct bufferevent *bev, void *ctx)
 
         //evbuffer_drain 将数据从缓冲区前面移除
         evbuffer_drain(datain, msg_len);
-        //bufferevent_free(bev);free(ctx);
-        //bufferevent_disable(bev, EV_READ);
-        //c->state = terminal_state;
+
+        //conn_close(c);
+        bufferevent_disable(bev, EV_READ);
+        c->state = terminal_state;
     }
 
 
@@ -426,15 +439,15 @@ static void thread_libevent_process(evutil_socket_t fd, short which, void *arg) 
           	//bufferevent_setwatermark(bev, EV_READ, 60, 0);	//读取数据至少60字节
     		bufferevent_enable(bev, item->event_flags);
             {
-                char buf[256];
+
                 struct sockaddr_in client_addr;
                 socklen_t client_addr_len = sizeof(client_addr);
 
                 //int client_fd = bufferevent_getfd(client->bev);
                 getpeername(client->sfd, (struct sockaddr *)&client_addr, &client_addr_len);
-                inet_ntop(AF_INET, &client_addr.sin_addr, buf, sizeof(buf));
-                int port = ntohs(client_addr.sin_port);
-                INFO("[thread:0x%x process] New client: [%s:%d]",  me->thread_id, buf,port);
+                inet_ntop(AF_INET, &client_addr.sin_addr, client->ip, sizeof(client->ip));
+                client->port = ntohs(client_addr.sin_port);
+                INFO("[thread:0x%x process] New client: [%s:%d]",  me->thread_id,client->ip,client->port);
             }
 
             cqi_free(item);
@@ -690,12 +703,12 @@ static void drive_machine(conn *c) {
     sfd = accept(c->sfd, (struct sockaddr *)&addr, &addrlen);
 
     if (sfd == -1) {
+        ERROR("accept failed! errno:%d", errno);
         if (errno == ENOSYS) {
             // 	ENOSYS 函数没有实现
+            ERROR("ENOSYS");
             return;
         }
-        ERROR("accept failed! errno:%d", errno);
-
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
             // EWOULDBLOCK/EAGAIN 再尝试一下
             return;
@@ -718,22 +731,16 @@ static void drive_machine(conn *c) {
 #ifdef TLS
     SSL *ssl = NULL;
     if (c->ssl_enabled) {
-        assert(IS_TCP(c->transport) && settings.ssl_enabled);
-
-        if (settings.ssl_ctx == NULL) {
-            if (settings.verbose) {
-                ERROR("SSL context is not initialized");
-            }
+        //TODO SSL_CTX_new 需要释放  SSL_CTX_free (ssl_ctx);
+        SSL_CTX *ssl_ctx = SSL_CTX_new (SSLv23_client_method());
+        if(ssl_ctx == 0){
+            ERROR("SSL_CTX_new failed");
             close(sfd);
             return;
         }
-        SSL_LOCK();
-        ssl = SSL_new(settings.ssl_ctx);
-        SSL_UNLOCK();
+        ssl = SSL_new(ssl_ctx);
         if (ssl == NULL) {
-            if (settings.verbose) {
-                ERROR("Failed to created the SSL object");
-            }
+            ERROR("Failed to created the SSL object");
             close(sfd);
             return;
         }
@@ -742,9 +749,7 @@ static void drive_machine(conn *c) {
         if (ret <= 0) {
             int err = SSL_get_error(ssl, ret);
             if (err == SSL_ERROR_SYSCALL || err == SSL_ERROR_SSL) {
-                if (settings.verbose) {
-                    ERROR("SSL connection failed with error code : %d : %s", err, strerror(errno));
-                }
+                ERROR("SSL connection failed with error code : %d : %s", err, strerror(errno));
                 SSL_free(ssl);
                 close(sfd);
                 return;
@@ -779,6 +784,3 @@ void event_handler(const evutil_socket_t fd, const short which, void *arg) {
     /* wait for next event */
     return;
 }
-
-
-
