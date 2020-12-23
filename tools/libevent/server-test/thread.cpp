@@ -197,13 +197,17 @@ conn* server_new(int port){
 //===============================CQ===========================================//
 
 static void cq_init(CQ *cq) {
-    pthread_mutex_init(&cq->lock, NULL);
+    int ret;
+    ret = pthread_mutex_init(&cq->lock, NULL);
+    assert(ret == 0);
     cq->head = NULL;
     cq->tail = NULL;
 }
 
 static void cq_destory(CQ *cq){
-    pthread_mutex_destroy(&cq->lock);
+    int ret;
+    ret = pthread_mutex_destroy(&cq->lock);
+    assert(ret == 0);
 }
 
 static CQ_ITEM *cq_pop(CQ *cq) {
@@ -523,14 +527,11 @@ static void create_worker(void *(*func)(void *), void *arg) {
 }
 
 static void register_thread_initialized(void) {
-    int ret;
-    ret = pthread_mutex_lock(&init_lock);
-    assert(ret == 0);
+    pthread_mutex_lock(&init_lock);
     init_count++;
-    ret = pthread_cond_signal(&init_cond);
-    assert(ret == 0);
-    ret = pthread_mutex_unlock(&init_lock);
-    assert(ret == 0);
+    pthread_cond_signal(&init_cond);
+    pthread_mutex_unlock(&init_lock);
+
 
 }
 

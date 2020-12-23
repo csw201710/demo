@@ -103,7 +103,7 @@ int runmain(){
 
 
     // 创建工作线程,每个线程独立的 event loop
-    memcached_thread_init(2 , 0);
+    memcached_thread_init(10 , 0);
 
     c = server_new(12345);
 
@@ -114,7 +114,7 @@ int runmain(){
         perror("event_add");
         return -1;
     }
-    stop_main_loop = 0;
+    //stop_main_loop = 0;
     while (!stop_main_loop) {
         if (event_base_loop(main_base, EVLOOP_ONCE) != 0) {
             retval = -1;
@@ -134,7 +134,11 @@ int runmain(){
 
 
 int main(){
-    runmain();
+    int i=0;
+    while(i++<3){
+        INFO("running %d",i);
+        runmain();
+    }
     INFO("finished");
     return 0;
 }
