@@ -202,6 +202,9 @@ static void cq_init(CQ *cq) {
     cq->tail = NULL;
 }
 
+static void cq_destory(CQ *cq){
+    pthread_mutex_destroy(&cq->lock);
+}
 
 static CQ_ITEM *cq_pop(CQ *cq) {
     CQ_ITEM *item;
@@ -396,14 +399,12 @@ static void errorcb(struct bufferevent *bev, short error, void *ctx)
 
 
 
-
-
 static void thread_libevent_process(evutil_socket_t fd, short which, void *arg) {
     LIBEVENT_THREAD *me = (LIBEVENT_THREAD *)arg;
     CQ_ITEM *item = 0;
     char buf[1];
     conn *c;
-
+    //INFO("[%s] called",__func__);
     if (read(fd, buf, 1) != 1) {
         ERROR("Can't read from libevent pipe");
         return;
@@ -455,6 +456,7 @@ static void thread_libevent_process(evutil_socket_t fd, short which, void *arg) 
         break;
     }
     case 's':{
+        //INFO("get s");
         event_base_loopexit(me->base, NULL);
         break;
     }
@@ -497,6 +499,7 @@ static void setup_thread(LIBEVENT_THREAD *me) {
     }
     cq_init(me->new_conn_queue);
     init_thread_head(me);
+    //INFO("[%s] called",__func__);
 }
 
 
@@ -516,13 +519,18 @@ static void create_worker(void *(*func)(void *), void *arg) {
         ERROR("Can't create thread: %s", strerror(ret));
         exit(1);
     }
+    //INFO("[%s] called",__func__);
 }
 
 static void register_thread_initialized(void) {
-    pthread_mutex_lock(&init_lock);
+    int ret;
+    ret = pthread_mutex_lock(&init_lock);
+    assert(ret == 0);
     init_count++;
-    pthread_cond_signal(&init_cond);
-    pthread_mutex_unlock(&init_lock);
+    ret = pthread_cond_signal(&init_cond);
+    assert(ret == 0);
+    ret = pthread_mutex_unlock(&init_lock);
+    assert(ret == 0);
 
 }
 
@@ -533,17 +541,17 @@ static void *worker_libevent(void *arg) {
     register_thread_initialized();
 
     event_base_loop(me->base, 0);
-
-
-
     event_base_free(me->base);
+    me->base = 0;
 
+    cq_destory(me->new_conn_queue);
     free(me->new_conn_queue);
 
     close_all_client(me, conn_close);
-    pthread_detach(pthread_self());
+
     // same mechanism used to watch for all threads exiting.
     register_thread_initialized();
+    pthread_detach(pthread_self());
     return NULL;
 }
 
@@ -558,10 +566,14 @@ static int total_threads = 0;
 
 void memcached_thread_init(int nthreads, void *arg) {
     int         i;
+    int ret;
+    ret = pthread_mutex_init(&init_lock, NULL);
+    assert(ret == 0);
+    ret = pthread_cond_init(&init_cond, NULL);
+    assert(ret == 0);
+    ret = pthread_mutex_init(&cqi_freelist_lock, NULL);
+    assert(ret == 0);
 
-    pthread_mutex_init(&init_lock, NULL);
-    pthread_cond_init(&init_cond, NULL);
-    pthread_mutex_init(&cqi_freelist_lock, NULL);
     cqi_freelist = NULL;
 
     total_threads = nthreads;
@@ -592,6 +604,7 @@ void memcached_thread_init(int nthreads, void *arg) {
     }
 
     /* Wait for all the threads to set themselves up before returning. */
+    init_count = 0;
     pthread_mutex_lock(&init_lock);
     wait_for_thread_registration(total_threads);
     pthread_mutex_unlock(&init_lock);
@@ -603,11 +616,12 @@ void memcached_thread_init(int nthreads, void *arg) {
 void stop_threads(void) {
     char buf[1];
     int i;
-
+    int ret;
     INFO("asking background threads to stop");
 
     buf[0] = 's';
-    pthread_mutex_lock(&init_lock);
+    ret = pthread_mutex_lock(&init_lock);
+    assert(ret == 0);
     init_count = 0;
     for (i = 0; i < total_threads; i++) {
         if (write(threads[i].notify_send_fd, buf, 1) != 1) {
@@ -615,9 +629,14 @@ void stop_threads(void) {
             /* TODO: This is a fatal problem. Can it ever happen temporarily? */
         }
     }
-
     wait_for_thread_registration(total_threads);
     pthread_mutex_unlock(&init_lock);
+
+    // 关闭pipe
+    for(i = 0; i<total_threads;i++){
+        close(threads[i].notify_send_fd);
+        close(threads[i].notify_receive_fd);
+    }
 
     //destory
     pthread_mutex_destroy(&cqi_freelist_lock);

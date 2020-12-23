@@ -64,7 +64,7 @@ static void signal_cb(evutil_socket_t fd, short event, void *arg)
 
 
 
-int main(){
+int runmain(){
     int retval = 0;
     int sfd;
     conn* c;
@@ -103,7 +103,7 @@ int main(){
 
 
     // 创建工作线程,每个线程独立的 event loop
-    memcached_thread_init(10 , 0);
+    memcached_thread_init(2 , 0);
 
     c = server_new(12345);
 
@@ -114,7 +114,7 @@ int main(){
         perror("event_add");
         return -1;
     }
-    //int i=0;
+    stop_main_loop = 0;
     while (!stop_main_loop) {
         if (event_base_loop(main_base, EVLOOP_ONCE) != 0) {
             retval = -1;
@@ -124,9 +124,17 @@ int main(){
          //   stop_main_loop = 1;
         //}
     }
+
     stop_threads();
 
     conn_close(c);
     event_base_free(main_base);
     return retval;
+}
+
+
+int main(){
+    runmain();
+    INFO("finished");
+    return 0;
 }
