@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <string.h>
 
@@ -15,12 +16,12 @@ int formatGMTToLocal(const char* t){
     return -1;
   }
   
-  strncpy(tmp, t, strlen(t));
-  p[0]=strtok_r(tmp, " ",&buf);
-  p[1] = strtok_r(NULL, " ", &buf);
-  p[2] = strtok_r(NULL, " ", &buf);
-  p[3] = strtok_r(NULL, " ", &buf);
-  p[4] = strtok_r(NULL, " ", &buf);
+  strncpy(tmp, t, sizeof(tmp) - 1);
+  
+  for (int i=0;i<5;i++){
+    p[i]=strtok_r(i == 0 ? tmp: 0, " ",&buf);    
+  }
+  
   printf("p[0]:%s\n",p[0]);
   printf("p[1]:%s\n",p[1]);
   printf("p[2]:%s\n",p[2]);
@@ -40,6 +41,22 @@ int formatGMTToLocal(const char* t){
       sprintf(t, "%02d", (i+1));
       break;
     }
+  }
+  {
+    char *pp[3] = {0};
+    char *tmp2 = (char*)p[2];
+    char * buf2;
+    int hour;
+    int minute;
+    int second;
+    for( int i=0;i< 3;i++){
+      pp[i]=strtok_r(i == 0 ? tmp2: 0, ":",&buf2);  
+    }
+    hour = atoi(pp[0]) + 8;
+    minute = atoi(pp[1]);
+    second = atoi(pp[2]);
+    sprintf(tmp2, "%02d:%02d:%02d", hour, minute, second);
+    
   }
   
   printf("p[0]:%s\n",p[0]);
