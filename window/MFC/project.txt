@@ -1,0 +1,3 @@
+输出目录:  $(SolutionDir)bin\$(Platform)_$(Configuration)\
+中间目录:  $(SolutionDir)bin\obj\$(RootNamespace)_$(Platform)_$(Configuration)\
+
