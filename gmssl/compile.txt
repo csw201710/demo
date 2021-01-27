@@ -1,3 +1,3 @@
 window:
-	perl Configure VC-WIN32 no-asm  no-sdf no-skf no-shared no-test --debug
+	perl Configure VC-WIN32 no-asm  no-sdf no-skf no-sof no-shared no-test --debug
 
