@@ -1,0 +1,4 @@
+静态库+MT运行库+GMSSL静态库
+nmake /f Makefile.vc mode=static  RTLIBCFG=static WITH_SSL=static DEBUG=no SSL_PATH=E:\123\1-drop\3\GmSSL-build ENABLE_IDN=no ENABLE_WINSSL=yes
+
+
