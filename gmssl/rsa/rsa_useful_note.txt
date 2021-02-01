@@ -1,0 +1,91 @@
+/*
+RSA证书公钥数据说明:
+	30 81 89 02 81 81  00 e3 8d 99 06 9f bd 9a c0 e5
+	6a 5d 03 b3 cf 09 ca 8e c1 4a 6c f9 90 c2 46 e0
+	89 44 69 cd a5 62 91 42 8a 5f e5 8f d3 fb 93 3f
+	bc d7 6e 5e f2 80 41 a6 79 78 8e 4d 1d 3d 65 ad
+	d4 36 9c c5 83 55 9d f1 bb 20 4c b7 6c 95 37 b0
+	37 06 e3 40 fb 8f 74 c3 59 91 a2 bf a2 e1 db 99
+	54 29 5f 9b a5 57 f5 40 7a 54 82 9c 84 d4 35 86
+	14 38 69 14 60 f3 c6 c7 11 75 f2 43 2c 34 ed 89
+	4a ae e1 9d 57 3e a1 02 03 01 00 01
+
+	这个是证书公钥的信息 （公钥的值绑定到持有对应私钥的个人、设备或服务的身份）
+
+	ASN.1采用Tag,Lenth,Value,编码方式，在此将整个编为一个sequence，可以理解为结构体，以30作为开始标志，
+	第二位81代表后面有1字节代表长度，即89代表长度（若为82则代表后面有两字节代表长度，依次类推），
+	转化成十进制为137，正好与后面的字节数吻合，从第四位02开始便是此sequence的内涵，相当于结构体的元素，
+	一般来说sequence往往需要嵌套，相当于结构体嵌结构体，但对公钥的sequence来说，此处仅有一层。
+	第四位02代表一下的内容为bit流，同样紧随其后的81代表有一字节代表长度，第六位的81代表长度为129，
+	即从00开始直到最后一行a1此为129字节，去掉前面的00，余下128位（占用的位数，就是所谓的密钥长度）便是rsa公钥的N值，
+	最后5个字节同样是bit流，
+	以02开始，03表示长度为3，最后的01 00 01 便是rsa公钥的E值。 即 RSA_F4 (# define RSA_F4  0x10001L)
+	关于为什么要在N值前补00，这可能是ASN.1的规定，若bit流的前四bit十六进制值小于8就要在在最前补零，看下面的例子
+	30 81 88 02 81 80  32 8d 99 06 9f bd 9a c0 e5 6a
+	5d 03 b3 cf 09 ca 8e c1 4a 6c f9 90 c2 46 e0 89
+	44 69 cd a5 62 91 42 8a 5f e5 8f d3 fb 93 3f bc
+	d7 6e 5e f2 80 41 a6 79 78 8e 4d 1d 3d 65 ad d4
+	36 9c c5 83 55 9d f1 bb 20 4c b7 6c 95 37 b0 37
+	06 e3 40 fb 8f 74 c3 59 91 a2 bf a2 e1 db 99 54
+	29 5f 9b a5 57 f5 40 7a 54 82 9c 84 d4 35 86 14
+	38 69 14 60 f3 c6 c7 11 75 f2 43 2c 34 ed 89 4a
+	ae e1 9d 57 3e a1 02 03 01 00 01
+	N的前四bit为0x3小于8，因此无需补零。
+	关于什么情况下要在tag值之后用8X标明有几位代表length，我的理解是，如果length的前四bit大于8或超过一字节，
+	则必需用8X标明，否则不用。
+
+*/
+
+
+
+// rsa 公钥结构转换
+RSA*  pubKeyToRSA(unsigned char* keydata, int key_len){
+	int ret;
+	RSA* rsa = NULL;
+
+	BIGNUM *n, *e;
+	if(key_len != 128 && key_len != 256)
+	{
+			printf("RSA public key length error.\n");
+			return 0;
+	}
+
+	rsa = RSA_new();
+	if(rsa == NULL)
+	{
+			printf("RSA_new error.\n");
+			return 0;
+	}
+
+	n = BN_new();
+	e = BN_new();
+
+	RSA_set0_key(rsa, n, e, NULL);
+	BN_set_word(e, RSA_F4);
+
+	if(!BN_bin2bn(keydata, key_len, n))
+	{
+			printf("BN_bin2bn error.\n");
+			RSA_free(rsa);
+			return 0;
+	}
+	return rsa;
+
+}
+
+
+int RSAToPubKey(RSA *rsa,unsigned char* buf, int *pBufLen){
+	const BIGNUM *n;
+	int rsabits;
+	RSA_get0_key(rsa, &n, NULL, NULL);
+	rsabits = RSA_size(rsa);
+	if((*pBufLen) < rsabits){
+		printf("buffer too small");
+		return -1;
+	}
+	BN_bn2bin(n, buf);
+	*pBufLen = rsabits;
+	return 0;
+}
+
+
