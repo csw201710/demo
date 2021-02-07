@@ -6,6 +6,7 @@
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/sinks/rotating_file_sink.h"
+#include "spdlog/sinks/daily_file_sink.h"
 
 #define MAX_LOG_SIZE 35*1024*1024
 
@@ -25,6 +26,8 @@ static void _getCurtime(char szTime[256]){
 //static std::shared_ptr<spdlog::logger> file_log = spdlog::basic_logger_mt<spdlog::async_factory>("async_svs", LOG_PATH);
 //with 5mb size max and 3 rotated files.
 static std::shared_ptr<spdlog::logger> file_log = spdlog::rotating_logger_mt("rotate_svs", LOG_PATH, MAX_LOG_SIZE, 3);
+//
+//static std::shared_ptr<spdlog::logger> file_log = spdlog::daily_logger_mt("daily_logger", LOG_PATH, 00, 00,false, 5);
 static std::shared_ptr<spdlog::logger> console = spdlog::stdout_color_mt("console");
 
 
@@ -44,10 +47,6 @@ void InitLogFactory(){
 void writelogStringToFile(unsigned int logType, const char *file, int line,const char* fmt, ...) {
     //参数解析
 	char *LogInfo = 0;
-
-	char Level[16];
-	struct stat st;
-
 	va_list arg;
 
 	va_start(arg, fmt);
@@ -82,3 +81,5 @@ void writelogStringToFile(unsigned int logType, const char *file, int line,const
 }
 
 }
+
+
