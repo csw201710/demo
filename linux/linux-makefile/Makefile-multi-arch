@@ -1,0 +1,66 @@
+
+TARGET := demo
+DIRS := ./
+SOURCES := $(foreach dir,$(DIRS),$(wildcard $(dir)*.cpp))
+
+ARCH := $(shell arch)
+
+INSTALLDIR := ./bin/$(ARCH)/
+
+TARGET := $(INSTALLDIR)/$(TARGET)
+
+SOURCES := $(filter-out ./test.cpp, $(SOURCES))
+
+OBJS := $(notdir $(SOURCES:.cpp=.o))
+OBJ_PATH := ./objs/$(ARCH)/
+OBJS_O := $(addprefix $(OBJ_PATH), $(OBJS))
+
+LD_PATH := $(shell pwd)/extra/so/$(ARCH)/
+
+#  -g
+CC := g++
+# -D_USE_DB_
+CFLAGS :=  -std=c++11 -D_DEBUG
+# -DTEST_FIXED_VALUE
+
+#
+INCLUDE := -I./    -Iextra/include -Iextra/include/gmssl
+#
+LIBPATH :=  -Lextra/so/$(ARCH)/  -Lextra/libs/$(ARCH)/
+
+#
+LIBS :=  -Wl,-rpath=./ -ldl -Wl,-Bsymbolic  -Wl,-Bstatic -ljsoncpp   -liniparser  -Wl,-Bdynamic  -pthread -lrt -Wl,-Bsymbolic
+
+
+all : $(OBJ_PATH) $(INSTALLDIR) $(TARGET)
+
+$(OBJ_PATH) :
+	mkdir -p $@
+$(INSTALLDIR) :
+	mkdir -p $@
+
+$(TARGET) : $(OBJS_O)
+	@echo 'export LD_LIBRARY_PATH=$(LD_PATH)'
+	@echo 'Linking......'
+	$(CC)  -o $@ $^ $(LIBPATH) $(LIBS) $(CFLAGS)
+	@echo 'Finished Linking: $@'
+	@echo 'success!'
+
+
+$(OBJS_O) : $(SOURCES)
+	@echo 'Building file: $(SOURCES)'
+	$(CC) $(CFLAGS) $(INCLUDE) -o $@ -c $(filter %$(*F).cpp,$(SOURCES))
+	@echo 'Finished building: $@'
+	@echo ''
+clean:
+	rm -f   $(TARGET) $(OBJ_PATH)*
+
+
+
+cs : clean-test test
+.PHONY: test
+test :
+	$(CC)  test.cpp -o $(INSTALLDIR)/$@ -std=c++11  -Wl,-rpath=./   -D_DEBUG $(INCLUDE)  $(LIBS) $(LIBPATH) -ldl
+clean-test :
+	rm  test -f
+
