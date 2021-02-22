@@ -7,7 +7,7 @@ ARCH := $(shell arch)
 
 INSTALLDIR := ./bin/$(ARCH)/
 
-TARGET := $(INSTALLDIR)/$(TARGET)
+TARGET := $(INSTALLDIR)$(TARGET)
 
 SOURCES := $(filter-out ./test.cpp, $(SOURCES))
 
@@ -19,17 +19,15 @@ LD_PATH := $(shell pwd)/extra/so/$(ARCH)/
 
 #  -g
 CC := g++
-# -D_USE_DB_
-CFLAGS :=  -std=c++11 -D_DEBUG
-# -DTEST_FIXED_VALUE
 
-#
+CFLAGS :=  -std=c++11 -D_DEBUG
+
 INCLUDE := -I./    -Iextra/include -Iextra/include/gmssl
-#
+
 LIBPATH :=  -Lextra/so/$(ARCH)/  -Lextra/libs/$(ARCH)/
 
-#
-LIBS :=  -Wl,-rpath=./ -ldl -Wl,-Bsymbolic  -Wl,-Bstatic -ljsoncpp   -liniparser  -Wl,-Bdynamic  -pthread -lrt -Wl,-Bsymbolic
+
+LIBS :=  -Wl,-rpath=./ -ldl -Wl,-Bsymbolic  -Wl,-Bstatic -ljsoncpp  -liniparser  -Wl,-Bdynamic  -pthread -lrt -Wl,-Bsymbolic
 
 
 all : $(OBJ_PATH) $(INSTALLDIR) $(TARGET)
@@ -46,12 +44,14 @@ $(TARGET) : $(OBJS_O)
 	@echo 'Finished Linking: $@'
 	@echo 'success!'
 
-
-$(OBJS_O) : $(SOURCES)
+#$(SOURCES)
+#$(filter %$(*F).cpp,$(SOURCES))
+$(OBJS_O) : $(OBJ_PATH)%.o : $(SRC_PATH)%.cpp
 	@echo 'Building file: $(SOURCES)'
-	$(CC) $(CFLAGS) $(INCLUDE) -o $@ -c $(filter %$(*F).cpp,$(SOURCES))
+	$(CC) $(CFLAGS) $(INCLUDE) -o $@ -c $^
 	@echo 'Finished building: $@'
 	@echo ''
+
 clean:
 	rm -f   $(TARGET) $(OBJ_PATH)*
 
@@ -63,4 +63,5 @@ test :
 	$(CC)  test.cpp -o $(INSTALLDIR)/$@ -std=c++11  -Wl,-rpath=./   -D_DEBUG $(INCLUDE)  $(LIBS) $(LIBPATH) -ldl
 clean-test :
 	rm  test -f
+
 
