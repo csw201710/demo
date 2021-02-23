@@ -1,3 +1,24 @@
+//for linux 
+static std::string StrFormat(const char *pszFmt, ...)
+{
+  char *buf = 0;
+	std::string str;
+	va_list args;
+	va_start(args, pszFmt);
+	vasprintf(&buf, pszFmt, args);
+	if(buf != 0){
+	  str = buf;
+	  free(buf);
+	}else{
+	  ERROR("vasprintf failed");
+	}
+
+	va_end(args);
+	return str;
+}
+
+
+
 static std::string fmt(const char *pszFmt, ...)
 {
 #ifdef _WIN32

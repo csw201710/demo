@@ -27,3 +27,19 @@
 00351D2E  add         esp,8  
 	return 0;
 
+
+
+
+new char(10) 和 new char[10] 的区别
+	{
+		std::unique_ptr<char> a = std::make_unique<char>(10);// new char(10);delete _Ptr; //分配一个char ,并10来初始化值
+	}
+	{
+		std::unique_ptr<char> b = std::unique_ptr<char>(new char[10]); //delete _Ptr;  maybe 错误???
+	}
+	{
+		std::unique_ptr<char[]> a = std::make_unique<char[]>(10); // new char[10] ;delete [] char;
+	}
+	{
+		std::unique_ptr<char[]> b = std::unique_ptr<char[]>(new char[10]); //new char[10] 分配一个大小为10的char数组
+	}
