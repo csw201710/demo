@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
                 //创建PendingIntent对象，点击通知打开你所要显示的界面
                 PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0,
                         intent, PendingIntent.FLAG_ONE_SHOT);
-                Notification noti = new Notification.Builder(mContext)
+                Notification notification = new Notification.Builder(mContext)
                         .setTicker("名称")
                         .setContentTitle("标题")
                         .setContentText("时间")
@@ -27,11 +27,23 @@ public class MainActivity extends AppCompatActivity {
                         .setDefaults(Notification.DEFAULT_SOUND)//设置声音
                         //.setContentIntent(pendingIntent)//点击之后的页面
                         .build();
+
+                // 自定义布局 R.layout.activity_main
+                RemoteViews contentView =  new  RemoteViews(getPackageName(),R.layout.view);
+                contentView.setImageViewResource(R.id.image,  R.mipmap.ic_launcher_round);
+                contentView.setTextViewText(R.id.text,"Hello, this message is in a custom expanded view");
+                notification.contentView = contentView;
+
+                //将此通知放到通知栏的"Ongoing"即"正在运行"组中
+                notification.flags |= Notification.FLAG_ONGOING_EVENT;
+                //表明在点击了通知栏中的"清除通知"后，此通知不清除
+                notification.flags |= Notification.FLAG_NO_CLEAR;
                 NotificationManager manager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
-                manager.notify(index++,noti);//id控制第几条，相同的id会替换掉上一次的消息通知
+                manager.notify(index++,notification);//id控制第几条，相同的id会替换掉上一次的消息通知
             }
         });
 
     }
 }
+
 
