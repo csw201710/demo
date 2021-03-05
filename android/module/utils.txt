@@ -1,0 +1,37 @@
+1. android 任务栏顶层消息提示
+public class MainActivity extends AppCompatActivity {
+    int index= 1;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        Button btn = (Button)findViewById(R.id.button);
+
+        btn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                Context mContext = MainActivity.this;//getApplicationContext();
+
+                //点击了之后进入的一个Actity
+                Intent intent = new Intent(mContext, MainActivity.class);
+
+                //创建PendingIntent对象，点击通知打开你所要显示的界面
+                PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0,
+                        intent, PendingIntent.FLAG_ONE_SHOT);
+                Notification noti = new Notification.Builder(mContext)
+                        .setTicker("名称")
+                        .setContentTitle("标题")
+                        .setContentText("时间")
+                        .setSmallIcon(R.mipmap.ic_launcher)//设置图标
+                        .setAutoCancel(true)//点击之后消失
+                        .setDefaults(Notification.DEFAULT_SOUND)//设置声音
+                        //.setContentIntent(pendingIntent)//点击之后的页面
+                        .build();
+                NotificationManager manager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+                manager.notify(index++,noti);//id控制第几条，相同的id会替换掉上一次的消息通知
+            }
+        });
+
+    }
+}
+
