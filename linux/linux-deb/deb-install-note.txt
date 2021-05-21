@@ -1,0 +1,72 @@
+安装一个新包
+			1. preinst
+			2. Unpacking 解压文件
+			3. postinst
+			
+		 /var/lib/dpkg/tmp.ci/preinst  install 0.1.1-2 0.1.1-2
+			  001
+			file not found
+		Unpacking mysoftware (0.1.1-2) ...
+		Setting up mysoftware (0.1.1-2) ...
+		 /var/lib/dpkg/info/mysoftware.postinst  configure 0.1.1-2
+			  001
+		this is a test 001.
+
+重复安装相同版本的包(和安装不同版本步骤相似)
+			
+		 /var/lib/dpkg/info/mysoftware.prerm  upgrade 0.1.1-2
+			  001
+		this is a test 001.
+		 /var/lib/dpkg/tmp.ci/preinst  upgrade 0.1.1-2 0.1.1-2
+			  001
+		this is a test 001.
+		Unpacking mysoftware (0.1.1-2) over (0.1.1-2) ...
+		 /var/lib/dpkg/info/mysoftware.postrm  upgrade 0.1.1-2
+			  001
+		this is a test 001.
+		Setting up mysoftware (0.1.1-2) ...
+		 /var/lib/dpkg/info/mysoftware.postinst  configure 0.1.1-2
+			  001
+		this is a test 001.
+
+
+删除一个安装包
+			1. prerm
+			2. 删除文件
+			3. postrm
+			
+	 /var/lib/dpkg/info/mysoftware.prerm  remove
+		  001
+	this is a test 001.
+	 /var/lib/dpkg/info/mysoftware.postrm  remove
+		  001
+		file not found
+		
+在老版本的基础上安装新版本包 
+			1. old.prerm upgrade 新版本号
+			2. new.preinst  upgrade 老版本号 新版本号
+			3. Unpacking 解压文件
+			4. old.postrm  upgrade 新版本号
+			5. new.postinst configure 老版本号
+			
+	 /var/lib/dpkg/info/mysoftware.prerm  upgrade 0.1.2-2
+		  001
+	this is a test 001.
+	 /var/lib/dpkg/tmp.ci/preinst  upgrade 0.1.1-2 0.1.2-2
+		  002
+	this is a test 001.
+	Unpacking mysoftware (0.1.2-2) over (0.1.1-2) ...
+	 /var/lib/dpkg/info/mysoftware.postrm  upgrade 0.1.2-2
+		  001
+	this is a test 002.
+	Setting up mysoftware (0.1.2-2) ...
+	 /var/lib/dpkg/info/mysoftware.postinst  configure 0.1.1-2
+		  002
+	this is a test 002.
+
+
+
+		
+		
+
+

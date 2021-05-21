@@ -1,0 +1,23 @@
+gen ca:
+        gmssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:sm2p256v1 -pkeyopt ec_param_enc:named_curve -out ca.key
+		#时间戳证书  openssl.cnf gmssl 源码路径中已存在 ,需要手动添加  	# [v3_tsa] extendedKeyUsage = critical,timeStamping 
+										
+		gmssl req -new -sm3 -key ca.key -x509 -days 36500 -out ca.crt -subj "/C=CN/ST=WX/L=XQ/O=KAIFA/OU=dev/CN=root/emailAddress=root@qq.com"  -config openssl.cnf -extensions v3_tsa
+	
+
+clientA:
+        gmssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:sm2p256v1 -pkeyopt ec_param_enc:named_curve -out clientA.key
+        gmssl req -new -key clientA.key  -out clientA.csr -subj "/C=CN/ST=GD/L=SZ/O=vihoo/OU=dev/CN=vivo.com/emailAddress=a@vivo.com"
+        //gmssl req -new -key clientA.key -out clientA.csr
+
+ca sign:
+        gmssl x509 -req -days 3650 -sm3 -CA ca.crt -CAkey ca.key  -in clientA.csr  -CAcreateserial -out clientA.crt -extfile extKey.cnf
+
+
+
+extKey.conf:
+	#内容
+	extendedKeyUsage = critical,timeStamping
+
+
+
