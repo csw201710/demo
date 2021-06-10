@@ -1,0 +1,29 @@
+nasm/yasm not found
+	yum install nasm
+	//yasm升级
+		//http://www.tortall.net/projects/yasm/releases/
+	nasm升级
+		https://www.nasm.us/pub/nasm/releasebuilds/2.13/linux/
+
+
+x264
+	git clone https://code.videolan.org/videolan/x264.git
+	cd x264
+	sudo ./configure --enable-shared --enable-static --prefix=/opt/public/encoder/x264  //
+	sudo make
+	sudo make install
+	
+	修改/etc/profile,添加
+		export PKG_CONFIG_LIBDIR=$PKG_CONFIG_LIBDIR:/opt/public/encoder/ffmpeg/lib/pkgconfig
+		export PATH=$PATH:/opt/encoder/bin
+		export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/public/encoder/ffmpeg/lib
+		#export C_INCLUDE_PATH=$C_INCLUDE_PATH:/opt/public/encoder/ffmpeg/include
+
+ffmpeg 编译:
+	./configure --enable-encoder=libx264 --enable-libx264 --enable-gpl --enable-pthreads  --enable-small --prefix=/opt/public/encoder/ffmpeg
+
+	
+	ffmpeg -i 1.wmv -vcodec libx264 -acodec copy  1.mp4
+
+
+
