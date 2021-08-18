@@ -1,0 +1,4 @@
+hide symbol
+-fvisibility=hidden -fvisibility-inlines-hidden  -Wl,--exclude-libs,ALL 
+
+
